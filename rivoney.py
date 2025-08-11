@@ -21,7 +21,7 @@ frontend_proc = subprocess.Popen(
 )
 
 print("Servers are running...")
-print("FastAPI: http://localhost:5000")
+print("FastAPI: http://localhost:8000")
 print("Frontend: http://localhost:3000")
 
 try:

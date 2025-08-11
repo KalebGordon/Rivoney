@@ -6,10 +6,13 @@ export default function ResumeBuilder() {
   const API_BASE = process.env.REACT_APP_API_BASE ?? "http://localhost:8000";
 
   async function fetchJSON(path, options = {}) {
-    const res = await fetch(`${API_BASE}${path}`, {
-      headers: { "Content-Type": "application/json", ...(options.headers || {}) },
-      ...options,
-    });
+    const hasBody = options.body != null;
+    const headers = {
+      ...(hasBody ? { "Content-Type": "application/json" } : {}),
+      ...(options.headers || {}),
+    };
+
+    const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       throw new Error(`HTTP ${res.status} ${res.statusText}: ${text}`);
@@ -65,12 +68,6 @@ export default function ResumeBuilder() {
       : v
         ? [{ text: String(v), experience: experienceOptions[0] ?? "", enhance: false }]
         : [];
-
-  const getAnswerTexts = (obj) =>
-    Object.values(obj || {})
-      .flatMap((v) => toRows(v))
-      .map((r) => r.text || "")
-      .filter(Boolean);
 
   // ---------- Hydrate from localStorage on mount (with migration) ----------
   useEffect(() => {
@@ -224,25 +221,15 @@ export default function ResumeBuilder() {
 
   // --- API-backed functions ---
   async function analyzeGaps(jobText) {
-    // TODO: supply user's actual stored template here
-    const resume_template = {
-      user_id: "demo",
-      summary: "",
-      experiences: [], // [{id, label, description, skills: []}]
-      education: [],
-    };
-
-    const data = await fetchJSON("/analyze/gaps", {
-      method: "POST",
-      body: JSON.stringify({
-        job_description: jobText,
-        resume_template,
-      }),
-    });
-
-    // Accept either [{prompt: "..."}] or ["..."]
-    return (data?.questions || []).map((q) => (typeof q === "string" ? q : q?.prompt)).filter(Boolean);
-  }
+  const data = await fetchJSON("/analyze/gaps", {
+    method: "POST",
+    body: JSON.stringify({
+      user_id: "demo",            // or send `resume: theJsonResume`
+      job_description: jobText,
+    }),
+  });
+  return Array.isArray(data?.questions) ? data.questions : [];
+}
 
   async function generateResume(jobText, answersPayload) {
     const resume_template = {
@@ -297,10 +284,10 @@ export default function ResumeBuilder() {
 
   // At least one non-empty answer (>= 8 chars) per question
   const allAnswered =
-    gapQuestions.length > 0 &&
+    gapQuestions.length === 0 ||
     gapQuestions.every((_, qi) =>
       toRows(answers[qi]).some((r) => (r.text || "").trim().length >= 8)
-    );
+  );
 
   const showPreview = genStatus !== "idle" && allAnswered;
 

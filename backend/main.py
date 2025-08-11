@@ -7,7 +7,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import sqlite3, json, os
 
+from dotenv import load_dotenv
+load_dotenv()
+
+from openai import OpenAI, APIConnectionError, RateLimitError, APIStatusError
+client = OpenAI(timeout=30, max_retries=2)
+
 DB_PATH = os.environ.get("RESUME_DB", "resumes.db")
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o")  # override if you want
 
 def get_conn():
     return sqlite3.connect(DB_PATH)
@@ -41,14 +48,106 @@ def load_latest_resume(user_id: str) -> Dict:
         if not row:
             raise HTTPException(status_code=404, detail="No resume found for user")
         return json.loads(row[0])
+    
+def generate_gap_questions(resume: Dict, job_description: str, max_q: int = 10) -> List[str]:
+    """
+    Uses OpenAI to analyze resume + JD and produce up to max_q specific, non-duplicative questions.
+    If there are no meaningful gaps, returns an empty list.
+    """
+    # Safety: keep resume brief-ish in prompt to avoid bloating tokens
+    resume_snippet = json.dumps(resume, ensure_ascii=False)
+
+    system_msg = f"""
+        You analyze a candidate's JSON Resume and a job description to propose only *meaningful* follow-up questions that would materially improve a tailored résumé for this role.
+
+        Output rules:
+        - Return at most {max_q} questions; return an empty list if none are needed.
+        - Questions must be concise, résumé-focused, and answerable with the candidate’s professional history (work, projects, skills, education, certifications).
+        - Prefer questions that elicit quantifiable impact, scope/scale, specific tools/tech, domain context, constraints, outcomes, or verifiable artifacts (e.g., links to repos, publications, portfolios).
+
+        Do NOT ask about:
+        - Personal preferences or logistics (commute, relocation, hybrid/remote, schedule, availability, culture fit, salary, work authorization).
+        - Confirmations of tenure (e.g., “Do you have X years of Y?”). If tenure is relevant, ask for concrete examples that demonstrate proficiency instead.
+        - Anything already stated clearly in the résumé/JD, or generic/boilerplate questions.
+        - Soft, subjective prompts without résumé value (e.g., “Are you comfortable with …?”).
+
+        Quality constraints:
+        - No explanations or preambles—only the questions.
+        - No duplicates; each question should target a distinct, high-value gap.
+        - If coverage is sufficient, return [].
+
+        Return format is a JSON object with a single key "questions" mapping to an array of strings.
+        """.strip()
+
+    user_msg = (
+        "JOB DESCRIPTION:\n"
+        f"{job_description}\n\n"
+        "JSON RESUME:\n"
+        f"{resume_snippet}\n\n"
+        "Output strictly as a JSON object with a single key `questions` whose value is an array of strings."
+    )
+
+    # Ask the model to strictly return JSON
+    try:
+        resp = client.chat.completions.create(
+            model=OPENAI_MODEL,
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": system_msg},
+                {"role": "user", "content": user_msg},
+            ],
+            temperature=0.2,
+        )
+    except APIConnectionError as e:
+        # Network/TLS/proxy/VPN issues reaching OpenAI
+        raise HTTPException(
+            status_code=502,
+            detail="Could not reach OpenAI (network/TLS). Check internet/VPN/firewall and API key."
+        ) from e
+    except RateLimitError as e:
+        # Too many requests / quota
+        raise HTTPException(status_code=429, detail="OpenAI rate limit. Please retry shortly.") from e
+    except APIStatusError as e:
+        # Surfaces upstream HTTP status from OpenAI (e.g., 401 if key is invalid)
+        raise HTTPException(status_code=e.status_code, detail=f"OpenAI error: {e.message}") from e
+    except Exception as e:
+        # Any other unexpected client error
+        raise HTTPException(status_code=500, detail="Unexpected error calling OpenAI.") from e
+
+    content = resp.choices[0].message.content or "{}"
+    try:
+        data = json.loads(content)
+        items = data.get("questions", [])
+        # normalize: strings only, unique, trimmed, <= max_q
+        seen, clean = set(), []
+        for q in items:
+            if not isinstance(q, str):
+                continue
+            q = q.strip()
+            if q and q not in seen:
+                clean.append(q)
+                seen.add(q)
+            if len(clean) >= max_q:
+                break
+        return clean
+    except Exception:
+        # Fallback: if the model somehow returns non-JSON, return empty
+        return []
 
 # ---------- FastAPI ----------
 app = FastAPI(title="Resume API (JSON Resume)")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        # add more if needed: "http://localhost:5173", "http://127.0.0.1:5173",
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=True,
+    max_age=3600,
 )
 
 # ---------- Schemas ----------
@@ -99,32 +198,42 @@ def save_resume(req: SaveResumeRequest):
 def get_latest_resume(user_id: str = Query(...)):
     return {"resume": load_latest_resume(user_id)}
 
+@app.get("/template/options")
+def template_options(user_id: str = Query("demo")):
+    try:
+        resume = load_latest_resume(user_id)
+        names = []
+        for w in (resume.get("work") or []):
+            if isinstance(w, dict):
+                name = w.get("name") or w.get("company")
+                if name:
+                    names.append(name)
+        # unique, keep order
+        seen, opts = set(), []
+        for n in names:
+            if n not in seen:
+                seen.add(n)
+                opts.append(n)
+        return {"options": opts or ["Experience 1"]}
+    except HTTPException:
+        # If no resume yet, return a harmless default
+        return {"options": ["Experience 1"]}
+
+
 @app.post("/analyze/gaps", response_model=AnalyzeGapsResponse)
 def analyze_gaps(req: AnalyzeGapsRequest):
+    # Hardcode default for now
+    if not req.user_id:
+        req.user_id = "demo"
+
     resume = req.resume or (load_latest_resume(req.user_id) if req.user_id else None)
     if not resume:
         raise HTTPException(status_code=400, detail="Provide resume or user_id with a saved resume")
 
-    # Minimal, generic questions (you’ll plug your own logic here)
-    qs = [
-        "Which 2–3 accomplishments best match this role?",
-        "Provide 2–3 metrics that show impact relevant to this job.",
-        "Describe your most relevant project (scope, stack, impact).",
-        "List tools/tech you’ve used that map to the posting.",
-        "Any certifications or training that apply?",
-        "What domain expertise should be emphasized?",
-        "Which soft skills are strongest and demonstrable here?",
-        "Preferred location/work setup and availability?",
-        "Any gaps to explain (dates, tool, industry)?",
-        "Anything to de-emphasize for this role?",
-    ]
+    # NEW: call OpenAI to produce up to 10 questions (or none)
+    qs = generate_gap_questions(resume=resume, job_description=req.job_description, max_q=10)
 
-    # Optional: nudge work-specific prompts
-    work_names = [w.get("name") for w in (resume.get("work") or []) if isinstance(w, dict) and w.get("name")]
-    for n in work_names[:3]:
-        qs.insert(0, f"Give a quantified example from '{n}' relevant to this role.")
-
-    return AnalyzeGapsResponse(questions=qs[:10])
+    return AnalyzeGapsResponse(questions=qs)
 
 @app.post("/generate", response_model=GenerateResponse)
 def generate(req: GenerateRequest):
