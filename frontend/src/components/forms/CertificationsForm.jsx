@@ -15,7 +15,7 @@ const CertificationsForm = ({ certifications, setCertifications }) => {
       {certifications.map((cert, i) => (
         <input
           key={i}
-          type="text"
+          type="text" className="form-input"
           placeholder="Certification"
           value={cert}
           onChange={handleChange(i)}

@@ -1,60 +1,120 @@
-/* === Resume Generator — Consolidated Styles === */
+/* === Resume Generator — Aligned to ResumeBuilder look === */
 
-/* Root container */
-.resume-form {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 16px;
+/* Root container (match ResumeBuilder) */
+.resume-form,
+form.resume-form { /* allow both forms of usage */
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
   scroll-behavior: smooth;
-  --control-indent: 1rem; /* left offset for the dropdown + caption */
+  --control-indent: 1rem;
+  /* Typography baseline (match ResumeBuilder) */
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+               Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 /* Headings & copy */
 .resume-form h1,
 .resume-form h2 {
   text-align: center;
-  margin: 0 0 1.25rem;
+  margin: 0 0 1.5rem; /* match ResumeBuilder h2 spacing */
 }
 .resume-form p {
   margin: 0 0 1rem;
   line-height: 1.5;
 }
 
-/* Cards / sections */
+/* Cards / sections (keep, but harmonize radius/shadow a bit) */
 .section-card {
   background: var(--surface, #fff);
-  border: 1px solid color-mix(in srgb, #000 8%, transparent);
-  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 8px; /* align with ResumeBuilder radius */
   padding: 20px;
   margin: 16px 0;
-  box-shadow: 0 1px 10px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   transition: opacity 320ms ease, transform 420ms cubic-bezier(.2,.8,.2,1);
 }
 .section-card.hidden { display: none; }
 
-/* Labels (generic) */
+/* Labels (generic) — match ResumeBuilder */
 .resume-form label {
   display: block;
   font-weight: 600;
-  margin: 12px 0 6px;
+  margin: 0.5rem 0 0.25rem;
 }
 
-/* Inputs (textarea, input, select) */
+/* Force ALL controls to inherit typography (fixes input vs textarea font) */
+.resume-form input,
+.resume-form textarea,
+.resume-form select,
+.resume-form button {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+/* Inputs (textarea, input, select) — match ResumeBuilder sizing/spacing */
 .resume-form textarea,
 .resume-form input,
 .resume-form select {
-  width: calc(100% - 32px);
-  margin: 0 auto;
-  display: block;
-  padding: 12px;
+  width: 100%;              /* full width */
+  padding: 0.5rem;          /* match */
+  margin-bottom: 2rem;      /* match */
+  border-radius: 4px;       /* match */
+  border: 1px solid #ccc;   /* match */
+  font-size: 1rem;          /* match */
   line-height: 1.4;
-  font-size: 14.5px;
-  border-radius: 10px;
-  border: 1px solid #d6d6d6;
+  display: block;
 }
 .resume-form textarea { resize: vertical; }
 
-/* Status / meta text */
+/* Placeholders consistent */
+.resume-form ::placeholder {
+  color: #888;
+  opacity: 1;
+  font: inherit;
+}
+
+/* Buttons — match ResumeBuilder */
+.resume-form button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #0077cc;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.resume-form button:hover {
+  background-color: #005fa3;
+}
+
+/* Secondary button row (keep your generator UI; harmonize radius) */
+.button-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.button-row button {
+  padding: 10px 14px;
+  border-radius: 6px;       /* align with builder button radius */
+  border: 1px solid #ddd;
+  background: #f8f8f8;
+  color: #222;
+  cursor: pointer;
+  transition: color .15s ease, filter .15s ease, background-color .15s ease, border-color .15s ease;
+}
+.button-row button:disabled { opacity: .5; cursor: not-allowed; }
+.button-row button:hover:not(:disabled) { filter: brightness(0.97); }
+
+/* Status / meta text (keep) */
 .resume-status {
   margin-top: 8px;
   display: flex;
@@ -67,83 +127,62 @@
 .muted { color: #666; }
 .error { color: #a60000; }
 
-/* Buttons */
-.button-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 14px;
-}
-.button-row button {
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  background: #f8f8f8;
-  color: #222;
-  cursor: pointer;
-  transition: color .15s ease, filter .15s ease, background-color .15s ease, border-color .15s ease;
-}
-.button-row button:disabled { opacity: .5; cursor: not-allowed; }
-.button-row button:hover:not(:disabled) { filter: brightness(0.97); color: #fff; }
-
-/* Gap Analysis list */
+/* Gap Analysis list (keep) */
 .qa-list { list-style: decimal; padding-left: 20px; }
 .qa-item { margin: 10px 0 16px; }
 .qa-item .q { font-weight: 600; margin-bottom: 6px; }
 
-/* Per-answer row */
+/* Per-answer row (keep) */
 .qa-row { margin: 1rem 0 2rem; }
 
 .answer-label {
   display: block;
-  width: calc(100% - 1rem);  /* match textarea width rule */
-  margin: 0 auto 6px;        /* same horizontal centering as textarea */
+  margin: 0 0 6px;
   font-weight: 600;
   color: #333;
 }
 
-
-/* Controls row (select + AI toggle) */
+/* Controls row (select + AI toggle) (keep) */
 .qa-controls {
-  display: flex;
-  align-items: center;    /* vertical center vs. select height */
-  gap: 16px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: max-content max-content;
+  align-items: center;
+  column-gap: 16px;
+  row-gap: 8px;
 }
 
-/* Stack "Link to:" above the select and shift BOTH by 1rem */
+/* Select block (keep) */
 .select-wrap {
-  display: inline-grid;          /* keeps caption above select */
+  display: inline-grid;
   grid-template-rows: auto auto;
   align-items: start;
-  margin: 0 0 0 var(--control-indent); /* << left margin increase */
+  margin: 0 0 0 var(--control-indent);
 }
 .select-wrap .mini-label {
   font-size: 12px;
   color: #555;
   margin: 0;
-  padding-left: 10px;            /* align caption text with select’s inner padding */
+  padding-left: 10px;
   line-height: 1.2;
 }
 .select-wrap select {
-  width: auto;                   /* avoid stretching full row here */
-  margin-left: 0.5rem;
   min-width: 170px;
   padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid #d6d6d6;
 }
 
-/* AI Enhance: checkbox + text side-by-side and centered */
+/* AI Enhance toggle (keep) */
 .ai-toggle {
-  display: inline-flex !important;  /* override generic label block */
-  align-items: center;              /* vertical centering */
+  display: inline-flex !important;
+  align-items: center;
   gap: 8px;
   margin: 0;
   line-height: 1;
   font-size: 14px;
   color: #333;
-  white-space: nowrap;              /* keep on one line */
-  width: auto;                      /* prevent block wrapping */
+  white-space: nowrap;
+  transform: translateY(0.5rem);
 }
 .ai-toggle input {
   width: 16px;
@@ -151,29 +190,9 @@
   margin: 0;
   vertical-align: middle;
 }
-.ai-toggle span {
-  display: inline-block;
-}
+.ai-toggle span { display: inline-block; }
 
-/* Add/Remove actions */
-.qa-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
-}
-.qa-actions button { align-self: flex-start; }
-
-.qa-actions .remove-btn {
-  background: #d9534f;
-  color: #fff;
-}
-
-.qa-actions .remove-btn:hover:not(:disabled) {
-  background: #c9302c;
-}
-
-/* JSON preview / code block */
+/* JSON preview (keep) */
 .preview-block,
 .preview-edit {
   background: #0f172a;
@@ -191,64 +210,10 @@
   resize: vertical;
 }
 
-/* Small-screen tweaks */
+/* Small-screen tweaks (keep) */
 @media (max-width: 640px) {
   .resume-form { padding: 12px; }
   .section-card { padding: 16px; }
   .button-row { flex-direction: column; }
   .button-row button { width: 100%; }
-}
-
-/* Controls row (select + AI toggle) */
-.qa-controls {
-  display: grid;                     /* use grid for true cross-axis centering */
-  grid-template-columns: max-content max-content;
-  align-items: center;               /* centers the AI toggle vs. the whole select block */
-  column-gap: 16px;
-  row-gap: 8px;
-}
-
-/* Stack "Link to:" above the select and shift BOTH by 1rem */
-.select-wrap {
-  display: inline-grid;              /* caption above select */
-  grid-template-rows: auto auto;
-  align-items: start;
-  margin: 0 0 0 1rem;                /* << increase left margin by 1rem */
-}
-.select-wrap .mini-label {
-  font-size: 12px;
-  color: #555;
-  margin: 0;
-  padding-left: 10px;                /* aligns caption text with select’s inner padding */
-  line-height: 1.2;
-}
-.select-wrap select {
-  min-width: 170px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #d6d6d6;
-}
-
-/* AI Enhance: checkbox + text side-by-side, vertically centered */
-.ai-toggle {
-  display: inline-flex !important;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  line-height: 1;
-  font-size: 14px;
-  color: #333;
-  white-space: nowrap;
-  
-  /* Instead of margin-top, use translate to move it visually */
-  transform: translateY(0.5rem); /* change to 3rem if you want more */
-}
-.ai-toggle input {
-  width: 16px;
-  height: 16px;
-  margin: 0;
-  vertical-align: middle;
-}
-.ai-toggle span {
-  display: inline-block;
 }

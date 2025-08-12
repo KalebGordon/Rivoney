@@ -6,8 +6,8 @@ import EducationForm from '../forms/EducationForm';
 import CertificationsForm from '../forms/CertificationsForm';
 import ProjectsForm from '../forms/ProjectsForm';
 import SkillsForm from '../forms/SkillsForm';
-import '../styles/ResumeBuilder.css';
 import { initialExperience, initialEducation } from '../utils/defaultTemplates';
+import '../styles/ResumeBuilder.css';
 
 const API_BASE = process.env.REACT_APP_API_BASE ?? "http://localhost:8000"; // change to 5000 if that's your server
 

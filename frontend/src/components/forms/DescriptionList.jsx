@@ -15,7 +15,7 @@ const DescriptionList = ({ description = [], onChange, onRemove, onAdd, disabled
           }}
         >
           <input
-            type="text"
+            type="text" className="form-input"
             placeholder={`Description ${j + 1}`}
             value={desc}
             onChange={(e) => onChange(j, e.target.value)}
@@ -29,27 +29,11 @@ const DescriptionList = ({ description = [], onChange, onRemove, onAdd, disabled
           />
           <button
             type="button"
+            className="remove-btn"
             onClick={() => onRemove(j)}
             disabled={disabledRemove && description.length === 1}
-            style={{
-              padding: 0,
-              width: '2rem',
-              height: '2rem',
-              minWidth: '2rem',
-              minHeight: '2rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.25rem',
-              backgroundColor: '#1976d2',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
           >
-            ✖
+            <span>✖</span>
           </button>
         </div>
       ))}

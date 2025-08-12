@@ -12,8 +12,8 @@ const ExperienceForm = ({ experience, setExperience }) => {
       {experience.map((exp, i) => (
         <div key={i} style={{ marginBottom: '2rem' }}>
           <h3>Experience</h3>
-          <input type="text" placeholder="Company" value={exp.company} onChange={handleChange(setExperience, i, 'company')} />
-          <input type="text" placeholder="Title" value={exp.title} onChange={handleChange(setExperience, i, 'title')} />
+          <input type="text" className="resume-form" placeholder="Company" value={exp.company} onChange={handleChange(setExperience, i, 'company')} />
+          <input type="text" className="resume-form" placeholder="Title" value={exp.title} onChange={handleChange(setExperience, i, 'title')} />
           
           <label>Start Date</label>
           <input type="month" value={exp.startDate} onChange={handleChange(setExperience, i, 'startDate')} />
@@ -21,11 +21,12 @@ const ExperienceForm = ({ experience, setExperience }) => {
           <label>End Date</label>
           <input type="month" value={exp.isCurrent ? '' : exp.endDate} onChange={handleChange(setExperience, i, 'endDate')} disabled={exp.isCurrent} />
 
-          <div style={{ marginTop: '0rem', marginBottom: '1rem', display: 'flex', justifyContent: 'flex-start' }}>
+          <div style={{ marginTop: '-1rem', marginBottom: '1rem', display: 'flex', justifyContent: 'flex-start' }}>
             <label htmlFor={`currentExp-${i}`} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap' }}>
               <input
                 id={`currentExp-${i}`}
                 type="checkbox"
+                class="checkbox"
                 checked={exp.isCurrent}
                 onChange={handleChange(setExperience, i, 'isCurrent')}
                 style={{ margin: '0.1rem' }}
@@ -34,7 +35,7 @@ const ExperienceForm = ({ experience, setExperience }) => {
             </label>
           </div>
 
-          <input type="text" placeholder="Setting (e.g., Remote)" value={exp.setting} onChange={handleChange(setExperience, i, 'setting')} />
+          <input type="text" className="resume-form" placeholder="Setting (e.g., Remote)" value={exp.setting} onChange={handleChange(setExperience, i, 'setting')} />
 
           <DescriptionList
             description={exp.description}

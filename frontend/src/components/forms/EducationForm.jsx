@@ -12,8 +12,8 @@ const EducationForm = ({ education, setEducation }) => {
       {education.map((edu, i) => (
         <div key={i} style={{ marginBottom: '2rem' }}>
           <h3>Education</h3>
-          <input type="text" placeholder="School" value={edu.school} onChange={handleChange(setEducation, i, 'school')} />
-          <input type="text" placeholder="Degree" value={edu.degree} onChange={handleChange(setEducation, i, 'degree')} />
+          <input type="text" className="form-input" placeholder="School" value={edu.school} onChange={handleChange(setEducation, i, 'school')} />
+          <input type="text" className="form-input" placeholder="Degree" value={edu.degree} onChange={handleChange(setEducation, i, 'degree')} />
           
           <label>Start Date</label>
           <input type="month" value={edu.startDate} onChange={handleChange(setEducation, i, 'startDate')} />
@@ -34,8 +34,8 @@ const EducationForm = ({ education, setEducation }) => {
             </label>
           </div>
 
-          <input type="text" placeholder="Focus Areas" value={edu.focusAreas} onChange={handleChange(setEducation, i, 'focusAreas')} />
-          <input type="text" placeholder="Honors (optional)" value={edu.honors} onChange={handleChange(setEducation, i, 'honors')} />
+          <input type="text" className="form-input" placeholder="Focus Areas" value={edu.focusAreas} onChange={handleChange(setEducation, i, 'focusAreas')} />
+          <input type="text" className="form-input" placeholder="Honors (optional)" value={edu.honors} onChange={handleChange(setEducation, i, 'honors')} />
 
           <DescriptionList
             description={edu.description}

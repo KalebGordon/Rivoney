@@ -1,5 +1,6 @@
 import React from 'react';
 
+
 const BasicsForm = ({ basics, setBasics }) => {
   const handleChange = (field) => (e) => {
     setBasics((prev) => ({ ...prev, [field]: e.target.value }));

@@ -15,7 +15,7 @@ const ProjectsForm = ({ projects, setProjects }) => {
       {projects.map((proj, i) => (
         <input
           key={i}
-          type="text"
+          type="text" className="form-input"
           placeholder="Project Description"
           value={proj}
           onChange={handleChange(i)}

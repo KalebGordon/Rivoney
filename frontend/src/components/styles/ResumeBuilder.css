@@ -1,6 +1,4 @@
-/* src/components/ResumeBuilder.css */
-
-.resume-form {
+form.resume-form {
   max-width: 600px;
   margin: 2rem auto;
   padding: 2rem;
@@ -9,20 +7,44 @@
   box-shadow: 0 2px 12px rgba(0,0,0,0.1);
 }
 
-.resume-form h2 {
+form.resume-form {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+               Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  font-size: 16px;        /* pick your base size */
+  line-height: 1.5;
+}
+
+/* Force ALL controls to inherit typography */
+form.resume-form input,
+form.resume-form textarea,
+form.resume-form select,
+form.resume-form button {
+  font: inherit;          /* inherits family, size, weight, line-height, etc. */
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+/* Make placeholders consistent too */
+form.resume-form ::placeholder {
+  color: #888;
+  opacity: 1;             /* Safari/Firefox normalize */
+  font: inherit;
+}
+
+resume-form h2 {
   text-align: center;
   margin-bottom: 1.5rem;
 }
 
-.resume-form label {
+form.resume-form label {
   display: block;
-  margin: 0.5rem 0 0.25rem;
+  margin: 0.5rem 0 0rem;
   font-weight: 600;
 }
 
-.resume-form input,
-.resume-form select,
-.resume-form textarea {
+form.resume-form input,
+form.resume-form select,
+form.resume-form textarea{
   width: 100%;
   padding: 0.5rem;
   margin-bottom: 1rem;
@@ -31,7 +53,7 @@
   font-size: 1rem;
 }
 
-.resume-form button {
+form.resume-form button {
   width: 100%;
   padding: 0.75rem;
   background-color: #0077cc;
@@ -42,6 +64,34 @@
   cursor: pointer;
 }
 
-.resume-form button:hover {
+form.resume-form button:hover {
   background-color: #005fa3;
+}
+
+form.resume-form button.remove-btn {
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  min-height: 2rem;
+  display: flex;
+  align-items: center;   /* vertical center */
+  justify-content: center; /* horizontal center */
+  font-size: 1rem;
+  background-color: #a64a00;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1; /* removes extra vertical whitespace */
+  padding: 0;     /* no extra padding */
+  transform: translateY(-0.5rem);
+}
+
+form.resume-form button.remove-btn:hover {
+   filter: brightness(0.9); 
+}
+
+form.resume-form button.remove-btn span {
+  display: inline-block;
 }

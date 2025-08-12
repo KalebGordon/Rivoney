@@ -15,7 +15,7 @@ const SkillsForm = ({ skills, setSkills }) => {
       {skills.map((skill, i) => (
         <input
           key={i}
-          type="text"
+          type="text" className="form-input"
           placeholder="Skill"
           value={skill}
           onChange={handleChange(i)}
