@@ -86,7 +86,6 @@ const ExperienceForm = ({ experience, setExperience }) => {
               onAdd={handleAdd(setExperience, initialExperience)}
             />
           )}
-          <hr />
         </div>
       ))}
     </>

@@ -24,6 +24,13 @@ form.resume-form button {
   letter-spacing: inherit;
 }
 
+form.resume-form input,
+form.resume-form select,
+form.resume-form textarea,
+form.resume-form button {
+  box-sizing: border-box;
+}
+
 /* Make placeholders consistent too */
 form.resume-form ::placeholder {
   color: #888;
@@ -38,7 +45,7 @@ resume-form h2 {
 
 form.resume-form label {
   display: block;
-  margin: 0.5rem 0 0rem;
+  margin: 0.5rem 0rem 0.25rem;
   font-weight: 600;
 }
 
@@ -55,7 +62,7 @@ form.resume-form textarea{
 
 form.resume-form button {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.5rem;
   background-color: #0077cc;
   color: white;
   border: none;

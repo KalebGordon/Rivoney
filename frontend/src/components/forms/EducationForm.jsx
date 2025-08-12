@@ -1,3 +1,4 @@
+// components/forms/EducationForm.jsx
 import React from 'react';
 import DescriptionList from './DescriptionList';
 import AddRemoveButton from '../ui/AddRemoveButton';
@@ -12,21 +13,56 @@ const EducationForm = ({ education, setEducation }) => {
       {education.map((edu, i) => (
         <div key={i} style={{ marginBottom: '2rem' }}>
           <h3>Education</h3>
-          <input type="text" className="form-input" placeholder="School" value={edu.school} onChange={handleChange(setEducation, i, 'school')} />
-          <input type="text" className="form-input" placeholder="Degree" value={edu.degree} onChange={handleChange(setEducation, i, 'degree')} />
-          
+
+          <input
+            type="text"
+            className="form-input"
+            placeholder="School"
+            value={edu.school || ''}
+            onChange={handleChange(setEducation, i, 'school')}
+          />
+
+          <input
+            type="text"
+            className="form-input"
+            placeholder="Degree (e.g., B.S., M.S.)"
+            value={edu.degree || ''}
+            onChange={handleChange(setEducation, i, 'degree')}
+          />
+
+          {/* NEW: Major directly under Degree */}
+          <input
+            type="text"
+            className="form-input"
+            placeholder="Area of Study"
+            value={edu.major || ''}
+            onChange={handleChange(setEducation, i, 'major')}
+          />
+
           <label>Start Date</label>
-          <input type="month" value={edu.startDate} onChange={handleChange(setEducation, i, 'startDate')} />
+          <input
+            type="month"
+            value={edu.startDate || ''}
+            onChange={handleChange(setEducation, i, 'startDate')}
+          />
 
           <label>End Date</label>
-          <input type="month" value={edu.isCurrent ? '' : edu.endDate} onChange={handleChange(setEducation, i, 'endDate')} disabled={edu.isCurrent} />
+          <input
+            type="month"
+            value={edu.isCurrent ? '' : (edu.endDate || '')}
+            onChange={handleChange(setEducation, i, 'endDate')}
+            disabled={edu.isCurrent}
+          />
 
-          <div style={{ marginTop: '0rem', marginBottom: '1rem', display: 'flex', justifyContent: 'flex-start' }}>
-            <label htmlFor={`currentEdu-${i}`} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap' }}>
+          <div style={{ marginTop: '-1rem', marginBottom: '1rem', display: 'flex', justifyContent: 'flex-start' }}>
+            <label
+              htmlFor={`currentEdu-${i}`}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap' }}
+            >
               <input
                 id={`currentEdu-${i}`}
                 type="checkbox"
-                checked={edu.isCurrent}
+                checked={!!edu.isCurrent}
                 onChange={handleChange(setEducation, i, 'isCurrent')}
                 style={{ margin: '0.1rem' }}
               />
@@ -34,9 +70,7 @@ const EducationForm = ({ education, setEducation }) => {
             </label>
           </div>
 
-          <input type="text" className="form-input" placeholder="Focus Areas" value={edu.focusAreas} onChange={handleChange(setEducation, i, 'focusAreas')} />
-          <input type="text" className="form-input" placeholder="Honors (optional)" value={edu.honors} onChange={handleChange(setEducation, i, 'honors')} />
-
+          {/* Keep description bullets */}
           <DescriptionList
             description={edu.description}
             onChange={(j, value) =>
@@ -86,7 +120,6 @@ const EducationForm = ({ education, setEducation }) => {
               onAdd={handleAdd(setEducation, initialEducation)}
             />
           )}
-          <hr />
         </div>
       ))}
     </>

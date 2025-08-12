@@ -6,7 +6,6 @@ export const initialExperience = {
   endDate: '',
   setting: '',
   description: [''],
-  isCurrent: false,
 };
 
 export const initialEducation = {
@@ -16,6 +15,5 @@ export const initialEducation = {
   endDate: '',
   focusAreas: '',
   honors: '',
-  isCurrent: false,
   description: [''],
 };

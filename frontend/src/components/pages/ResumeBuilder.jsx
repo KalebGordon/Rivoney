@@ -56,7 +56,6 @@ function mapToJsonResume({ basics = {}, experience, education, certifications, p
       email: basics.email || "",
       phone: basics.phone || "",
       url: basics.url || "",
-      // If you want to “remove summary”, keep it empty here or delete the key.
       summary: basics.summary || "",
       location: basics.location || {},
       profiles: Array.isArray(basics.profiles)
@@ -73,21 +72,13 @@ function mapToJsonResume({ basics = {}, experience, education, certifications, p
     },
 
     // EXPERIENCE -> JSON Resume "work"
-    // Accepts: x.descriptions (preferred), x.description (string), x.highlights, x.bullets
+    // Accepts: x.highlights
     work: (experience || []).map(x => ({
       name: x.company || x.name || "",
       position: x.title || x.position || "",
-      url: x.url || "",
       startDate: x.startDate || "",
       endDate: x.endDate || "",
-      // If you want to drop summary, leave it blank or omit this line
-      summary: x.summary || "",
-      highlights: mergeUnique(
-        x.descriptions,  // ← normalized list from your form
-        x.description,   // ← sometimes a single textarea
-        x.highlights,    // ← legacy
-        x.bullets        // ← any other alias you used
-      )
+      highlights: x.description
     })),
 
     // EDUCATION (ensure courses is a string array)
@@ -99,7 +90,7 @@ function mapToJsonResume({ basics = {}, experience, education, certifications, p
       startDate: ed.startDate || "",
       endDate: ed.endDate || "",
       score: ed.score || "",
-      courses: toStringArray(ed.courses)
+      description: ed.description
     })),
 
     // CERTIFICATES

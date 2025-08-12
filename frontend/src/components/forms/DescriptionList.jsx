@@ -19,13 +19,6 @@ const DescriptionList = ({ description = [], onChange, onRemove, onAdd, disabled
             placeholder={`Description ${j + 1}`}
             value={desc}
             onChange={(e) => onChange(j, e.target.value)}
-            style={{
-              flexGrow: 1,
-              padding: '0.5rem',
-              fontSize: '1rem',
-              lineHeight: '1.5rem',
-              height: '1.5rem',
-            }}
           />
           <button
             type="button"

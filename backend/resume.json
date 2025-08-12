@@ -1,0 +1,107 @@
+{
+  "basics": {
+    "name": "Kaleb Gordon",
+    "label": "Data Manager",
+    "email": "kalebparkergordon@gmail.com",
+    "phone": "6145615027",
+    "url": "",
+    "summary": "I'm a Data Manager passionate about building scalable, automated data infrastructures. I specialize in end-to-end data solutions, from ETL and predictive analytics to cloud deployments. Always learning, building, and driving real-world impact through data.",
+    "location": {
+      "address": "641 S College Dr",
+      "city": "Bowling Green",
+      "region": "OH",
+      "postalCode": "43402",
+      "countryCode": "United States"
+    },
+    "profiles": []
+  },
+  "work": [
+    {
+      "name": "Leidos",
+      "position": "Data Manager",
+      "url": "",
+      "startDate": "2024-03",
+      "endDate": "Current",
+      "summary": "",
+      "highlights": [
+        "Oversee and maintain the data infrastructure for multiple Leidos FUSRAP laboratories, ensuring accurate capture, storage, and reporting of hazardous waste data.",
+        "Designed and deployed a custom Laboratory Information Management System (LIMS) that automates sample intake, inventory tracking, equipment management, data transformation, and regulatory reporting — saving $500,000+ per site implemented.",
+        "Ensure compliance with regulatory standards from EPA, DOD, ISO, and USACE by implementing robust data governance practices across laboratory operations.",
+        "Engineered data pipelines and infrastructure to support processing increasing quantities of sensitive data."
+      ]
+    },
+    {
+      "name": "City of Mansfield",
+      "position": "Data Analyst",
+      "url": "",
+      "startDate": "2023-04",
+      "endDate": "2023-12",
+      "summary": "",
+      "highlights": [
+        "Spearheaded multiple initiatives, delivering actionable insights that improved municipal operations and decision-making.",
+        "Designed and implemented an automated utility collections calculator, reducing manual workload by 10+ hours weekly and improving billing efficiency",
+        "Deployed a high-accuracy abnormal usage detection algorithm, achieving a 200%+ increase in anomaly identification.",
+        "Presented technical findings and strategic recommendations to government officials, bridging data and public policy."
+      ]
+    },
+    {
+      "name": "RAIC Labs",
+      "position": "Imagery & GIS Analyst",
+      "url": "",
+      "startDate": "2023-02",
+      "endDate": "2023-11",
+      "summary": "",
+      "highlights": [
+        "Delivered high-impact imagery insights using the Rapid Automatic Image Categorization (RAIC) platform for clients including the U.S. Government, EPA, and Microsoft.",
+        "Developed custom scripts and automation tools to optimize feature engineering pipelines, accelerating RAIC’s model training and accuracy.",
+        "Created statistical reports and performance dashboards that assessed and validated real-world system effectiveness."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Western Governors University",
+      "url": "",
+      "area": "",
+      "studyType": "B.S.",
+      "startDate": "2023-10",
+      "endDate": "2025-04",
+      "score": "",
+      "courses": []
+    },
+    {
+      "institution": "Western Governors University",
+      "url": "",
+      "area": "",
+      "studyType": "M.S.",
+      "startDate": "2025-06",
+      "endDate": "Current",
+      "score": "",
+      "courses": []
+    }
+  ],
+  "certificates": [
+    {
+      "name": "CompTIA Project+",
+      "date": "",
+      "issuer": ""
+    },
+    {
+      "name": "CompTIA Data+",
+      "date": "",
+      "issuer": ""
+    },
+    {
+      "name": "AWS Certified Cloud Practitioner",
+      "date": "",
+      "issuer": ""
+    },
+    {
+      "name": "Data Engineering Practitioner",
+      "date": "",
+      "issuer": ""
+    }
+  ],
+  "projects": [],
+  "skills": []
+}
