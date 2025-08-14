@@ -17,47 +17,68 @@ const EducationForm = ({ education, setEducation }) => {
           <input
             type="text"
             className="form-input"
-            placeholder="School"
-            value={edu.school || ''}
-            onChange={handleChange(setEducation, i, 'school')}
+            placeholder="Institution"
+            value={edu.institution || ''}
+            onChange={handleChange(setEducation, i, 'institution')}
           />
 
           <input
             type="text"
             className="form-input"
-            placeholder="Degree (e.g., B.S., M.S.)"
-            value={edu.degree || ''}
-            onChange={handleChange(setEducation, i, 'degree')}
+            placeholder="Study Type (e.g., B.S., M.S.)"
+            value={edu.studyType || ''}
+            onChange={handleChange(setEducation, i, 'studyType')}
           />
 
-          {/* NEW: Major directly under Degree */}
+          {/* Major / Area of Study */}
           <input
             type="text"
             className="form-input"
             placeholder="Area of Study"
-            value={edu.major || ''}
-            onChange={handleChange(setEducation, i, 'major')}
+            value={edu.area || ''}
+            onChange={handleChange(setEducation, i, 'area')}
+          />
+
+          {/* NEW: Score */}
+          <input
+            type="text"
+            className="form-input"
+            placeholder="Score (e.g., GPA 3.9)"
+            value={edu.score || ''}
+            onChange={handleChange(setEducation, i, 'score')}
           />
 
           <label>Start Date</label>
           <input
-            type="month"
+            type="date"
             value={edu.startDate || ''}
             onChange={handleChange(setEducation, i, 'startDate')}
           />
 
           <label>End Date</label>
           <input
-            type="month"
+            type="date"
             value={edu.isCurrent ? '' : (edu.endDate || '')}
             onChange={handleChange(setEducation, i, 'endDate')}
             disabled={edu.isCurrent}
           />
 
-          <div style={{ marginTop: '-1rem', marginBottom: '1rem', display: 'flex', justifyContent: 'flex-start' }}>
+          <div
+            style={{
+              marginTop: '-1rem',
+              marginBottom: '1rem',
+              display: 'flex',
+              justifyContent: 'flex-start'
+            }}
+          >
             <label
               htmlFor={`currentEdu-${i}`}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap' }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                whiteSpace: 'nowrap'
+              }}
             >
               <input
                 id={`currentEdu-${i}`}
@@ -70,7 +91,7 @@ const EducationForm = ({ education, setEducation }) => {
             </label>
           </div>
 
-          {/* Keep description bullets */}
+          {/* Description Bullets */}
           <DescriptionList
             description={edu.description}
             onChange={(j, value) =>
@@ -81,7 +102,7 @@ const EducationForm = ({ education, setEducation }) => {
                         ...item,
                         description: item.description.map((d, dj) =>
                           dj === j ? value : d
-                        ),
+                        )
                       }
                     : item
                 )
@@ -93,7 +114,7 @@ const EducationForm = ({ education, setEducation }) => {
                   idx === i
                     ? {
                         ...item,
-                        description: item.description.filter((_, dj) => dj !== j),
+                        description: item.description.filter((_, dj) => dj !== j)
                       }
                     : item
                 )
@@ -105,7 +126,7 @@ const EducationForm = ({ education, setEducation }) => {
                   idx === i
                     ? {
                         ...item,
-                        description: [...item.description, ''],
+                        description: [...item.description, '']
                       }
                     : item
                 )
@@ -120,6 +141,7 @@ const EducationForm = ({ education, setEducation }) => {
               onAdd={handleAdd(setEducation, initialEducation)}
             />
           )}
+          <hr />
         </div>
       ))}
     </>

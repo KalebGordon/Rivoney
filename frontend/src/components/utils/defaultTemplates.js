@@ -17,3 +17,19 @@ export const initialEducation = {
   honors: '',
   description: [''],
 };
+
+export const initialCertificate = {
+  name: '',
+  date: '',
+  issuer: '',
+  url: ''
+};
+
+export const initialProject = {
+  name: '',
+  startDate: '',
+  endDate: '',
+  description: '',
+  highlights: [''], // start with one bullet for UX
+  url: ''
+};

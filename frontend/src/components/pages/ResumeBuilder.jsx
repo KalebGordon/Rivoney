@@ -26,7 +26,7 @@ const initialBasics = {
     postalCode: '',
     countryCode: '',
   },
-  profiles: [] // e.g., [{ network: 'LinkedIn', username: 'you', url: '...' }]
+  profiles: [''] 
 };
 
 // helpers

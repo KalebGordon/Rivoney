@@ -11,7 +11,7 @@ const DescriptionList = ({ description = [], onChange, onRemove, onAdd, disabled
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
-            marginBottom: '0.5rem',
+            marginBottom: '0rem',
           }}
         >
           <input
@@ -31,7 +31,6 @@ const DescriptionList = ({ description = [], onChange, onRemove, onAdd, disabled
         </div>
       ))}
       <button type="button" onClick={onAdd}>+ Add Description</button>
-      <hr style={{ marginTop: '1rem', marginBottom: '1rem', border: 'none', borderTop: '1px solid #ccc' }} />
     </div>
   );
 };

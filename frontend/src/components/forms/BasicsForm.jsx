@@ -1,5 +1,5 @@
 import React from 'react';
-
+import ProfileList from './ProfileList';
 
 const BasicsForm = ({ basics, setBasics }) => {
   const handleChange = (field) => (e) => {
@@ -9,7 +9,7 @@ const BasicsForm = ({ basics, setBasics }) => {
   const handleLocationChange = (field) => (e) => {
     setBasics((prev) => ({
       ...prev,
-      location: { ...prev.location, [field]: e.target.value }
+      location: { ...prev.location, [field]: e.target.value },
     }));
   };
 
@@ -29,6 +29,36 @@ const BasicsForm = ({ basics, setBasics }) => {
       <input type="text" placeholder="Region/State" value={basics.location.region} onChange={handleLocationChange('region')} />
       <input type="text" placeholder="Postal Code" value={basics.location.postalCode} onChange={handleLocationChange('postalCode')} />
       <input type="text" placeholder="Country" value={basics.location.countryCode} onChange={handleLocationChange('countryCode')} />
+
+      <h4>Social Profiles</h4>
+      <ProfileList
+        profiles={
+          Array.isArray(basics.profiles) && basics.profiles.length > 0
+            ? basics.profiles
+            : [''] // fallback to one empty
+        }
+        onChange={(j, value) =>
+          setBasics((prev) => ({
+            ...prev,
+            profiles: (prev.profiles ?? []).map((link, idx) =>
+              idx === j ? value : link
+            ),
+          }))
+        }
+        onRemove={(j) =>
+          setBasics((prev) => ({
+            ...prev,
+            profiles: (prev.profiles ?? []).filter((_, idx) => idx !== j),
+          }))
+        }
+        onAdd={() =>
+          setBasics((prev) => ({
+            ...prev,
+            profiles: [...(prev.profiles ?? []), ''],
+          }))
+        }
+        disabledRemove={true}
+      />
     </div>
   );
 };
