@@ -38,10 +38,11 @@ export const PublicationsForm = ({ publications, setPublications }) => {
             onChange={handleChange(setPublications, i, "publisher")}
           />
 
+          <label>Date</label>
           <input
             type="date"
             className="form-input"
-            placeholder="Release date"
+            placeholder="Release Date"
             value={pub.releaseDate || ""}
             onChange={handleChange(setPublications, i, "releaseDate")}
           />
@@ -49,7 +50,7 @@ export const PublicationsForm = ({ publications, setPublications }) => {
           <input
             type="url"
             className="form-input"
-            placeholder="https://example.com"
+            placeholder="Article/Publication URL"
             value={pub.url || ""}
             onChange={handleChange(setPublications, i, "url")}
           />

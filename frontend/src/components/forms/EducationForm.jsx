@@ -25,7 +25,7 @@ const EducationForm = ({ education, setEducation }) => {
           <input
             type="text"
             className="form-input"
-            placeholder="Study Type (e.g., B.S., M.S.)"
+            placeholder="Degree"
             value={edu.studyType || ''}
             onChange={handleChange(setEducation, i, 'studyType')}
           />
@@ -43,7 +43,7 @@ const EducationForm = ({ education, setEducation }) => {
           <input
             type="text"
             className="form-input"
-            placeholder="Score (e.g., GPA 3.9)"
+            placeholder="GPA"
             value={edu.score || ''}
             onChange={handleChange(setEducation, i, 'score')}
           />

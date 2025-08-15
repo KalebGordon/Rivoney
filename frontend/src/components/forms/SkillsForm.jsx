@@ -27,7 +27,7 @@ const SkillsForm = ({ skills, setSkills }) => {
           <input
             type="text"
             className="form-input"
-            placeholder="Skill name (e.g., Web Development)"
+            placeholder="Skill (e.g., Web Development)"
             value={skill.name || ""}
             onChange={handleChange(setSkills, i, "name")}
           />

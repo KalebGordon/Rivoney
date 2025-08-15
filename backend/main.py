@@ -237,6 +237,10 @@ def analyze_gaps(req: AnalyzeGapsRequest):
 
 @app.post("/generate", response_model=GenerateResponse)
 def generate(req: GenerateRequest):
+    # Hardcode default for now
+    if not req.user_id:
+        req.user_id = "demo"
+        
     base = req.resume or (load_latest_resume(req.user_id) if req.user_id else None)
     if not base:
         raise HTTPException(status_code=400, detail="Provide resume or user_id with a saved resume")

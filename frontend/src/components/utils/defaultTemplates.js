@@ -51,3 +51,20 @@ export const initialAward = {
   awarder: "", 
   summary: "" 
 };
+
+export const initialBasics = {
+  name: '',
+  label: '',
+  email: '',
+  phone: '',
+  url: '',
+  summary: '',
+  location: {
+    address: '',
+    city: '',
+    region: '',
+    postalCode: '',
+    countryCode: '',
+  },
+  profiles: [''] 
+};

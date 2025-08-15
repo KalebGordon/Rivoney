@@ -20,11 +20,9 @@ export default function ResumeBuilder() {
     return res.json();
   }
 
-  // --- Section 1: Job Post ---
+  // --- Section 1: Job Post (ephemeral only) ---
   const [jobPost, setJobPost] = useState("");
   const [touched, setTouched] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const saveTimer = useRef(null);
 
   // --- Section 2: Gap Analysis ---
   const [gapQuestions, setGapQuestions] = useState([]);
@@ -56,45 +54,13 @@ export default function ResumeBuilder() {
   const section2Ref = useRef(null);
   const section3Ref = useRef(null);
 
-  // Local storage keys
-  const LS_JOB = "resume_builder.job_description";
-  const LS_ANS = "resume_builder.answers";
-  const LS_PRE = "resume_builder.preview_json";
-
-  // ---------- Helpers: normalize old answers + extract texts ----------
+  // ---------- Helpers ----------
   const toRows = (v) =>
     Array.isArray(v)
       ? v.map((r) => ({ text: "", experience: experienceOptions[0] ?? "", enhance: false, ...r }))
       : v
         ? [{ text: String(v), experience: experienceOptions[0] ?? "", enhance: false }]
         : [];
-
-  // ---------- Hydrate from localStorage on mount (with migration) ----------
-  useEffect(() => {
-    const savedJob = localStorage.getItem(LS_JOB);
-    if (savedJob) setJobPost(savedJob);
-
-    const savedAns = localStorage.getItem(LS_ANS);
-    if (savedAns) {
-      try {
-        const raw = JSON.parse(savedAns);
-        const migrated = Object.fromEntries(
-          Object.entries(raw).map(([k, v]) => [k, toRows(v)])
-        );
-        setAnswers(migrated);
-        localStorage.setItem(LS_ANS, JSON.stringify(migrated)); // persist migration
-      } catch {
-        // ignore parse errors; start fresh
-      }
-    }
-
-    const savedPreview = localStorage.getItem(LS_PRE);
-    if (savedPreview) {
-      setPreviewJSON(JSON.parse(savedPreview));
-      setGenStatus("ready");
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // ---------- Fetch dropdown options on mount ----------
   useEffect(() => {
@@ -103,7 +69,7 @@ export default function ResumeBuilder() {
         const data = await fetchJSON("/template/options", { method: "GET" });
         if (Array.isArray(data?.options) && data.options.length) {
           setExperienceOptions(data.options);
-          // ensure any existing rows have a valid option selected
+          // Ensure any existing rows have a valid option selected (state-only; no storage writes)
           setAnswers((prev) => {
             const next = { ...prev };
             Object.keys(next).forEach((k) => {
@@ -112,28 +78,15 @@ export default function ResumeBuilder() {
                 experience: r.experience || data.options[0],
               }));
             });
-            localStorage.setItem(LS_ANS, JSON.stringify(next));
             return next;
           });
         }
-      } catch (e) {
-        // fall back to defaults; optional: console.warn
+      } catch {
+        // silent fallback to defaults
       }
     })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // ---------- Debounced save of the job post ----------
-  useEffect(() => {
-    if (!touched) return;
-    setIsSaving(true);
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      localStorage.setItem(LS_JOB, jobPost);
-      setIsSaving(false);
-    }, 400);
-    return () => clearTimeout(saveTimer.current);
-  }, [jobPost, touched]);
 
   const words = useMemo(
     () => (jobPost.trim() ? jobPost.trim().split(/\s+/).length : 0),
@@ -161,20 +114,16 @@ export default function ResumeBuilder() {
   }
 
   function handleClear() {
+    // Reset everything in-memory
     setJobPost("");
-    localStorage.removeItem(LS_JOB);
     setTouched(true);
-
-    // Reset downstream state if user clears job post
     setGapQuestions([]);
     setGapStatus("idle");
     setGapError("");
     setAnswers({});
-    localStorage.removeItem(LS_ANS);
     setPreviewJSON(null);
     setGenStatus("idle");
     setGenError("");
-    localStorage.removeItem(LS_PRE);
   }
 
   // --- Smooth scroll helper ---
@@ -190,7 +139,6 @@ export default function ResumeBuilder() {
         i === rowIdx ? { ...r, [field]: value } : r
       );
       next[qIdx] = rows;
-      localStorage.setItem(LS_ANS, JSON.stringify(next));
       return next;
     });
   }
@@ -199,7 +147,6 @@ export default function ResumeBuilder() {
     setAnswers((prev) => {
       const next = { ...prev };
       next[qIdx] = [...(next[qIdx] || []), newRow()];
-      localStorage.setItem(LS_ANS, JSON.stringify(next));
       return next;
     });
   }
@@ -214,22 +161,21 @@ export default function ResumeBuilder() {
         rows[0] = { ...rows[0], text: "" };
       }
       next[qIdx] = rows;
-      localStorage.setItem(LS_ANS, JSON.stringify(next));
       return next;
     });
   }
 
   // --- API-backed functions ---
   async function analyzeGaps(jobText) {
-  const data = await fetchJSON("/analyze/gaps", {
-    method: "POST",
-    body: JSON.stringify({
-      user_id: "demo",            // or send `resume: theJsonResume`
-      job_description: jobText,
-    }),
-  });
-  return Array.isArray(data?.questions) ? data.questions : [];
-}
+    const data = await fetchJSON("/analyze/gaps", {
+      method: "POST",
+      body: JSON.stringify({
+        user_id: "demo", // or send `resume: theJsonResume`
+        job_description: jobText,
+      }),
+    });
+    return Array.isArray(data?.questions) ? data.questions : [];
+  }
 
   async function generateResume(jobText, answersPayload) {
     const resume_template = {
@@ -262,14 +208,13 @@ export default function ResumeBuilder() {
       const qs = await analyzeGaps(jobPost);
       setGapQuestions(qs);
 
-      // initialize one row per question if missing
+      // initialize one row per question if missing (state-only)
       setAnswers((prev) => {
         const next = { ...prev };
         qs.forEach((_, qi) => {
           next[qi] = toRows(next[qi]);
           if (next[qi].length === 0) next[qi] = [newRow()];
         });
-        localStorage.setItem(LS_ANS, JSON.stringify(next));
         return next;
       });
 
@@ -287,7 +232,7 @@ export default function ResumeBuilder() {
     gapQuestions.length === 0 ||
     gapQuestions.every((_, qi) =>
       toRows(answers[qi]).some((r) => (r.text || "").trim().length >= 8)
-  );
+    );
 
   const showPreview = genStatus !== "idle" && allAnswered;
 
@@ -303,8 +248,7 @@ export default function ResumeBuilder() {
 
     try {
       const payload = await generateResume(jobPost, answers);
-      setPreviewJSON(payload);
-      localStorage.setItem(LS_PRE, JSON.stringify(payload));
+      setPreviewJSON(payload); // state only; no storage
       setGenStatus("ready");
       requestAnimationFrame(() => scrollTo(section3Ref));
     } catch (e) {
@@ -325,8 +269,7 @@ export default function ResumeBuilder() {
   function handleSaveEditedPreview() {
     try {
       const parsed = JSON.parse(editedPreviewText);
-      setPreviewJSON(parsed);
-      localStorage.setItem(LS_PRE, JSON.stringify(parsed));
+      setPreviewJSON(parsed); // state only; no storage
       setIsEditingPreview(false);
     } catch (e) {
       alert("Invalid JSON. Please fix formatting.");
@@ -363,7 +306,6 @@ export default function ResumeBuilder() {
               Add at least {minChars - chars} more characters for best results.
             </span>
           )}
-          {isSaving && <span> Saving…</span>}
         </div>
 
         <div className="button-row">
@@ -511,11 +453,10 @@ export default function ResumeBuilder() {
                 <button
                   type="button"
                   onClick={() => {
-                    alert("Saved!");
-                    localStorage.setItem(LS_PRE, JSON.stringify(previewJSON));
+                    alert("Session saved in memory (will reset on leave).");
                   }}
                 >
-                  Save
+                  Save (session)
                 </button>
               )}
             </div>

@@ -31,7 +31,7 @@ const ProjectsForm = ({ projects, setProjects }) => {
           <input
             type="url"
             className="form-input"
-            placeholder="Project URL (https://...)"
+            placeholder="Project URL"
             value={proj.url || ''}
             onChange={handleChange(setProjects, i, 'url')}
           />

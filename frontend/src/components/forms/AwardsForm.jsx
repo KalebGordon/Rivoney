@@ -25,7 +25,7 @@ export const AwardsForm = ({ awards, setAwards }) => {
           <input
             type="text"
             className="form-input"
-            placeholder="Award title"
+            placeholder="Award Title"
             value={award.title || ""}
             onChange={handleChange(setAwards, i, "title")}
           />
@@ -33,7 +33,7 @@ export const AwardsForm = ({ awards, setAwards }) => {
           <input
             type="text"
             className="form-input"
-            placeholder="Awarder (organization)"
+            placeholder="Awarding Organization"
             value={award.awarder || ""}
             onChange={handleChange(setAwards, i, "awarder")}
           />
