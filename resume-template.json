@@ -18,7 +18,7 @@
       "url": "https://twitter.com/john"
     }]
   },
-  "work": [{
+  "experience": [{
     "name": "Company",
     "position": "President",
     "url": "https://company.com",
@@ -40,17 +40,25 @@
       "DB1101 - Basic SQL"
     ]
   }],
+  "certifications": [{
+    "name": "Certificate",
+    "date": "2021-11-07",
+    "issuer": "Company",
+    "url": "https://certificate.com"
+  }],
+  "projects": [{
+    "name": "Project",
+    "description": "Description...",
+    "highlights": [
+      "Won award at AIHacks 2016"
+    ],
+    "url": "https://project.com/"
+  }],
   "awards": [{
     "title": "Award",
     "date": "2014-11-01",
     "awarder": "Company",
     "summary": "There is no spoon."
-  }],
-  "certificates": [{
-    "name": "Certificate",
-    "date": "2021-11-07",
-    "issuer": "Company",
-    "url": "https://certificate.com"
   }],
   "publications": [{
     "name": "Publication",
@@ -67,15 +75,5 @@
       "CSS",
       "JavaScript"
     ]
-  }],
-  "projects": [{
-    "name": "Project",
-    "startDate": "2019-01-01",
-    "endDate": "2021-01-01",
-    "description": "Description...",
-    "highlights": [
-      "Won award at AIHacks 2016"
-    ],
-    "url": "https://project.com/"
   }]
 }

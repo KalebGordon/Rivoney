@@ -27,9 +27,27 @@ export const initialCertificate = {
 
 export const initialProject = {
   name: '',
-  startDate: '',
-  endDate: '',
   description: '',
   highlights: [''], // start with one bullet for UX
   url: ''
+};
+
+export const initialSkill = { 
+  name: "", 
+  level: "", 
+};
+
+export const initialPublication = { 
+  name: "", 
+  publisher: "", 
+  releaseDate: "", 
+  url: "", 
+  summary: "" 
+};
+
+export const initialAward = { 
+  title: "", 
+  date: "", 
+  awarder: "", 
+  summary: "" 
 };

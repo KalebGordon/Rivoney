@@ -5,8 +5,10 @@ import ExperienceForm from '../forms/ExperienceForm';
 import EducationForm from '../forms/EducationForm';
 import CertificationsForm from '../forms/CertificationsForm';
 import ProjectsForm from '../forms/ProjectsForm';
+import PublicationsForm from '../forms/PublicationsForm'
+import Awardsform from '../forms/AwardsForm'
 import SkillsForm from '../forms/SkillsForm';
-import { initialExperience, initialEducation } from '../utils/defaultTemplates';
+import { initialExperience, initialEducation, initialCertificate, initialProject, initialPublication, initialAward, initialSkill } from '../utils/defaultTemplates';
 import '../styles/ResumeBuilder.css';
 
 const API_BASE = process.env.REACT_APP_API_BASE ?? "http://localhost:8000"; // change to 5000 if that's your server
@@ -127,9 +129,11 @@ const ResumeBuilder = () => {
   const [basics, setBasics] = useState(initialBasics);
   const [experience, setExperience] = useState([initialExperience]);
   const [education, setEducation] = useState([initialEducation]);
-  const [certifications, setCertifications] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [skills, setSkills] = useState([]);
+  const [certifications, setCertifications] = useState([initialCertificate]);
+  const [projects, setProjects] = useState([initialProject]);
+  const [publications, setPublications] = useState([initialPublication])
+  const [awards, setAwards] = useState([initialAward])
+  const [skills, setSkills] = useState([initialSkill]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -141,6 +145,8 @@ const ResumeBuilder = () => {
       education,
       certifications,
       projects,
+      publications,
+      awards,
       skills
     });
 
@@ -172,6 +178,7 @@ const ResumeBuilder = () => {
       <EducationForm education={education} setEducation={setEducation} />
       <CertificationsForm certifications={certifications} setCertifications={setCertifications} />
       <ProjectsForm projects={projects} setProjects={setProjects} />
+      <PublicationsForm publications={publications} setPublications={setPublications} />
       <SkillsForm skills={skills} setSkills={setSkills} />
 
       <br /><br />

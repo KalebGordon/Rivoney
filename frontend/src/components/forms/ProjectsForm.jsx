@@ -28,22 +28,6 @@ const ProjectsForm = ({ projects, setProjects }) => {
             onChange={handleChange(setProjects, i, 'name')}
           />
 
-          <label>Start Date</label>
-          <input
-            type="date"
-            className="form-input"
-            value={proj.startDate || ''}
-            onChange={handleChange(setProjects, i, 'startDate')}
-          />
-
-          <label>End Date</label>
-          <input
-            type="date"
-            className="form-input"
-            value={proj.endDate || ''}
-            onChange={handleChange(setProjects, i, 'endDate')}
-          />
-
           <input
             type="url"
             className="form-input"
@@ -100,7 +84,6 @@ const ProjectsForm = ({ projects, setProjects }) => {
               onAdd={handleAdd(setProjects, initialProject)}
             />
           )}
-          <hr />
         </div>
       ))}
     </>
