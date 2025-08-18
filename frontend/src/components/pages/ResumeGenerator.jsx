@@ -291,7 +291,7 @@ export default function ResumeBuilder() {
         <textarea
           id="jobPost"
           value={jobPost}
-          placeholder="Paste the full job post here."
+          placeholder="Paste the full job description here."
           onChange={handleChange}
           rows={18}
           spellCheck
@@ -333,73 +333,108 @@ export default function ResumeBuilder() {
       >
         <h2>Gap Analysis</h2>
         {gapStatus === "generating" && <p className="muted">Creating questions…</p>}
-        {gapStatus === "error" && <p className="error">{gapError || "Something went wrong. Try again."}</p>}
+        {gapStatus === "error" && (
+          <p className="error">{gapError || "Something went wrong. Try again."}</p>
+        )}
 
         {gapStatus === "ready" && (
           <>
             <p>Answer the questions below so we can tailor your resume.</p>
+
             <ol className="qa-list">
-              {gapQuestions.map((q, i) => (
-                <li key={i} className="qa-item">
-                  <div className="q">{q}</div>
+              {gapQuestions.map((q, i) => {
+                const qTitle = typeof q === "string" ? q : q?.question ?? "";
+                const tags = Array.isArray(q?.skill_tags) ? q.skill_tags : [];
+                const priority = typeof q === "object" ? q?.priority : null;
 
-                  {(answers[i] || [newRow()]).map((row, rIdx) => (
-                    <div key={rIdx} className="qa-row">
-                      <span className="answer-label">Answer {rIdx + 1}</span>
-                      <textarea
-                        aria-label={`Answer ${i + 1} - response ${rIdx + 1}`}
-                        value={row.text}
-                        onChange={(e) => handleRowChange(i, rIdx, "text", e.target.value)}
-                        rows={4}
-                        placeholder="Your answer…"
-                      />
+                // Try to preselect the linked experience from target_anchor
+                const anchor =
+                  typeof q === "object" && typeof q?.target_anchor === "string"
+                    ? q.target_anchor
+                    : "";
+                const matchedOpt = experienceOptions.find(
+                  (opt) => anchor && opt.toLowerCase().includes(anchor.toLowerCase())
+                );
+                const defaultOpt = matchedOpt || experienceOptions[0] || "";
 
-                      <div className="qa-controls">
-                        <label className="select-wrap" aria-label="Link to experience or education">
-                          <span className="mini-label">Link to:</span>
-                          <select
-                            value={row.experience}
-                            onChange={(e) => handleRowChange(i, rIdx, "experience", e.target.value)}
-                          >
-                            {experienceOptions.map((opt) => (
-                              <option key={opt} value={opt}>
-                                {opt}
-                              </option>
+                // Normalize rows for this question
+                const rows = toRows(answers[i] || [newRow()]);
+
+                return (
+                  <li key={i} className="qa-item">
+                    <div className="q">{qTitle}</div>
+
+                    {(priority || tags.length > 0) && (
+                      <div className="mini-meta">
+                        {priority && (
+                          <span className="mini-priority">Priority: {priority}</span>
+                        )}
+                        {tags.length > 0 && (
+                          <div className="mini-tags">
+                            {tags.map((t) => (
+                              <span key={t} className="tag">
+                                {t}
+                              </span>
                             ))}
-                          </select>
-                        </label>
-
-                        <label className="ai-toggle">
-                          <input
-                            type="checkbox"
-                            checked={row.enhance}
-                            onChange={(e) => handleRowChange(i, rIdx, "enhance", e.target.checked)}
-                          />
-                          <span>AI Enhance</span>
-                        </label>
+                          </div>
+                        )}
                       </div>
+                    )}
+
+                    {rows.map((row, rIdx) => (
+                      <div key={rIdx} className="qa-row">
+                        <span className="answer-label">Answer {rIdx + 1}</span>
+
+                        <textarea
+                          aria-label={`Answer ${i + 1} - response ${rIdx + 1}`}
+                          value={row.text || ""}
+                          onChange={(e) =>
+                            handleRowChange(i, rIdx, "text", e.target.value)
+                          }
+                          rows={4}
+                          placeholder="Your answer…"
+                        />
+
+                        <div className="qa-controls">
+                          <label
+                            className="select-wrap"
+                            aria-label="Link to experience or education"
+                          >
+                            <span className="mini-label">Link to:</span>
+                            <select
+                              value={row.experience || defaultOpt}
+                              onChange={(e) =>
+                                handleRowChange(i, rIdx, "experience", e.target.value)
+                              }
+                            >
+                              {experienceOptions.map((opt) => (
+                                <option key={opt} value={opt}>
+                                  {opt}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="qa-actions">
+                      <button
+                        type="button"
+                        className="remove-btn"
+                        onClick={() => removeAnswerRow(i)}
+                        disabled={toRows(answers[i]).length <= 1}
+                      >
+                        Remove answer
+                      </button>
+
+                      <button type="button" onClick={() => addAnswerRow(i)}>
+                        Add answer
+                      </button>
                     </div>
-                  ))}
-
-                  <div className="qa-actions">
-                    <button
-                      type="button"
-                      className="remove-btn"
-                      onClick={() => removeAnswerRow(i)}
-                      disabled={toRows(answers[i]).length <= 1}
-                    >
-                      Remove answer
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => addAnswerRow(i)}
-                    >
-                      Add answer
-                    </button>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ol>
 
             <div className="button-row">

@@ -35,7 +35,7 @@ form.resume-form { /* allow both forms of usage */
   border: 1px solid rgba(0,0,0,0.08);
   border-radius: 8px; /* align with ResumeBuilder radius */
   padding: 20px;
-  margin: 16px 0;
+  margin: 0rem 0rem;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   transition: opacity 320ms ease, transform 420ms cubic-bezier(.2,.8,.2,1);
 }
@@ -71,7 +71,7 @@ form.resume-form { /* allow both forms of usage */
   line-height: 1.4;
   display: block;
 }
-.resume-form textarea { resize: vertical; }
+.resume-form textarea { resize: vertical; max-width: 96%;}
 
 /* Placeholders consistent */
 .resume-form ::placeholder {
@@ -210,6 +210,97 @@ form.resume-form { /* allow both forms of usage */
   resize: vertical;
 }
 
+.mini-meta {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin: .25rem 0 .75rem;
+}
+
+.mini-priority {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef2ff;           /* base (indigo-ish) */
+  color: #1f2a44;
+  border: 1px solid #d0d7ff;
+  text-transform: capitalize;
+}
+
+/* Optional: priority-based colors (add `high` or `medium` class in JSX) */
+.mini-priority.high {
+  background: #ffe8e6;
+  color: #7a1a18;
+  border-color: #ffc8c2;
+}
+.mini-priority.medium {
+  background: #fff5cc;
+  color: #7a5c00;
+  border-color: #ffe999;
+}
+
+.mini-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .375rem;
+}
+
+.mini-tags .tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #e0e0e0;
+  white-space: nowrap;
+}
+
+/* Hover/focus affordances */
+.mini-tags .tag:focus,
+.mini-tags .tag:hover,
+.mini-priority:focus,
+.mini-priority:hover {
+  outline: none;
+  border-color: #b8c0ff;
+}
+
+/* Dark mode polish */
+@media (prefers-color-scheme: dark) {
+  .mini-priority {
+    background: #1f2937;
+    color: #c7d2fe;
+    border-color: #334155;
+  }
+  .mini-priority.high {
+    background: #3b1f1f;
+    color: #fecaca;
+    border-color: #4c1d1d;
+  }
+  .mini-priority.medium {
+    background: #3a2f14;
+    color: #fde68a;
+    border-color: #4a3b1a;
+  }
+  .mini-tags .tag {
+    background: #111827;
+    color: #e5e7eb;
+    border-color: #374151;
+  }
+  .mini-tags .tag:focus,
+  .mini-tags .tag:hover,
+  .mini-priority:focus,
+  .mini-priority:hover {
+    border-color: #6366f1;
+  }
+}
+
 /* Small-screen tweaks (keep) */
 @media (max-width: 640px) {
   .resume-form { padding: 12px; }
@@ -217,3 +308,4 @@ form.resume-form { /* allow both forms of usage */
   .button-row { flex-direction: column; }
   .button-row button { width: 100%; }
 }
+
