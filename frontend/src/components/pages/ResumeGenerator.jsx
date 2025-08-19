@@ -177,7 +177,7 @@ export default function ResumeBuilder() {
     return Array.isArray(data?.questions) ? data.questions : [];
   }
 
-  async function generateResume(jobText, answersPayload) {
+  async function generateResume(jobText, answersPayload, questionsPayload) {
     const resume_template = {
       user_id: "demo",
       summary: "",
@@ -189,8 +189,9 @@ export default function ResumeBuilder() {
       method: "POST",
       body: JSON.stringify({
         job_description: jobText,
-        answers: answersPayload, // map of questionIndex -> [{text, experience, enhance}]
-        resume_template,
+        answers: answersPayload,            // { [qIdx]: [{text, experience, enhance}] }
+        questions: questionsPayload ?? [],  // <-- NEW: pass gapQuestions
+        resume: resume_template,            // optional: keeps shape if no saved resume
       }),
     });
   }
@@ -247,7 +248,7 @@ export default function ResumeBuilder() {
     setEditedPreviewText("");
 
     try {
-      const payload = await generateResume(jobPost, answers);
+      const payload = await generateResume(jobPost, answers, gapQuestions); // <-- pass questions
       setPreviewJSON(payload); // state only; no storage
       setGenStatus("ready");
       requestAnimationFrame(() => scrollTo(section3Ref));
@@ -343,9 +344,15 @@ export default function ResumeBuilder() {
 
             <ol className="qa-list">
               {gapQuestions.map((q, i) => {
-                const qTitle = typeof q === "string" ? q : q?.question ?? "";
-                const tags = Array.isArray(q?.skill_tags) ? q.skill_tags : [];
-                const priority = typeof q === "object" ? q?.priority : null;
+                const qTitle        = typeof q === "string" ? q : q?.question ?? "";
+                const tags          = Array.isArray(q?.skill_tags) ? q.skill_tags : [];
+                const priority      = typeof q === "object" ? q?.priority : null;
+                const jdGap         = typeof q === "object" ? q?.jd_gap : "";
+                const gapReason     = typeof q === "object" ? q?.gap_reason : "";
+                const coverage      = typeof q === "object" ? q?.coverage_status : null; // "missing" | "weak"
+                const answerHint    = typeof q === "object" ? q?.answer_hint : "";
+                const bulletSkeleton= typeof q === "object" ? q?.bullet_skeleton : "";
+                const exampleBullet = typeof q === "object" ? q?.example_bullet : "";
 
                 // Try to preselect the linked experience from target_anchor
                 const anchor =
@@ -364,10 +371,26 @@ export default function ResumeBuilder() {
                   <li key={i} className="qa-item">
                     <div className="q">{qTitle}</div>
 
+                    {/* Gap context (identified from JD + why) */}
+                    {(jdGap || gapReason || coverage) && (
+                      <div className="gap-context">
+                        {coverage && (
+                          <span className={`coverage-badge ${coverage}`}>
+                            {coverage === "missing" ? "Missing" : "Weak"}
+                          </span>
+                        )}
+                        {jdGap && <blockquote className="jd-gap">“{jdGap}”</blockquote>}
+                        {gapReason && <div className="gap-reason">{gapReason}</div>}
+                      </div>
+                    )}
+
+                    {/* Meta (priority + tags) */}
                     {(priority || tags.length > 0) && (
                       <div className="mini-meta">
                         {priority && (
-                          <span className="mini-priority">Priority: {priority}</span>
+                          <span className={`mini-priority ${priority || ""}`}>
+                            Priority: {priority}
+                          </span>
                         )}
                         {tags.length > 0 && (
                           <div className="mini-tags">
@@ -377,6 +400,21 @@ export default function ResumeBuilder() {
                               </span>
                             ))}
                           </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Micro-guidance for answering */}
+                    {(answerHint || bulletSkeleton || exampleBullet) && (
+                      <div className="answer-guidance">
+                        {answerHint && <div className="mini-hint">{answerHint}</div>}
+                        {bulletSkeleton && (
+                          <div className="mini-skeleton">
+                            Skeleton: <code>{bulletSkeleton}</code>
+                          </div>
+                        )}
+                        {exampleBullet && (
+                          <div className="mini-example">e.g., {exampleBullet}</div>
                         )}
                       </div>
                     )}
@@ -392,7 +430,10 @@ export default function ResumeBuilder() {
                             handleRowChange(i, rIdx, "text", e.target.value)
                           }
                           rows={4}
-                          placeholder="Your answer…"
+                          placeholder={
+                            bulletSkeleton ||
+                            "Start with a verb; include tools, scope, metric, outcome."
+                          }
                         />
 
                         <div className="qa-controls">

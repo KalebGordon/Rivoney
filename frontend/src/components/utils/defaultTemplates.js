@@ -32,10 +32,7 @@ export const initialProject = {
   url: ''
 };
 
-export const initialSkill = { 
-  name: "", 
-  level: "", 
-};
+export const initialSkill = [""];
 
 export const initialPublication = { 
   name: "", 

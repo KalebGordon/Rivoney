@@ -151,11 +151,10 @@ function mapToJsonResume({
     })),
 
     // SKILLS -> skills[] (no keywords in form; omit)
-    skills: (skills || []).map(s =>
-      typeof s === "string"
-        ? { name: s, level: "" }
-        : { name: s.name || "", level: s.level || "" }
-    )
+    skills: (skills || [])
+      .map((s) => (typeof s === "string" ? s.trim() : String(s?.name || "").trim()))
+      .filter(Boolean)
+      .map((name) => ({ name }))  // ← only { name }, no level
   };
 }
 

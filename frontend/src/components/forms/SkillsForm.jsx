@@ -32,14 +32,6 @@ const SkillsForm = ({ skills, setSkills }) => {
             onChange={handleChange(setSkills, i, "name")}
           />
 
-          <input
-            type="text"
-            className="form-input"
-            placeholder="Level (e.g., Beginner, Intermediate, Expert)"
-            value={skill.level || ""}
-            onChange={handleChange(setSkills, i, "level")}
-          />
-
           {/* Add only on last row to reduce clutter */}
           {skills.length - 1 === i && (
             <AddRemoveButton label="Skill" onAdd={handleAdd(setSkills, initialSkill)} />
