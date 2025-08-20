@@ -8,14 +8,17 @@ root_dir = Path(__file__).parent.resolve()
 backend_dir = root_dir / "backend"
 frontend_dir = root_dir / "frontend"
 
+# Ensure env var is set for the backend process
+env = os.environ.copy()
+env["DEBUG_GAPS"] = "1"
+
 # Start FastAPI backend
 backend_cmd = ["uvicorn", "main:app", "--reload", "--port", "8000"]
-backend_proc = subprocess.Popen(backend_cmd, cwd=backend_dir)
+backend_proc = subprocess.Popen(backend_cmd, cwd=backend_dir, env=env)
 
 # Start React frontend
-frontend_cmd = ["npm", "start"]
 frontend_proc = subprocess.Popen(
-    "npm start",
+    ["npm", "start"],
     cwd=frontend_dir,
     shell=True  # This is key for Windows shell commands like npm
 )

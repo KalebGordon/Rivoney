@@ -28,8 +28,12 @@ const SkillsForm = ({ skills, setSkills }) => {
             type="text"
             className="form-input"
             placeholder="Skill (e.g., Web Development)"
-            value={skill.name || ""}
-            onChange={handleChange(setSkills, i, "name")}
+            value={skill || ""}
+            onChange={(e) => {
+              const newSkills = [...skills];
+              newSkills[i] = e.target.value;
+              setSkills(newSkills);
+            }}
           />
 
           {/* Add only on last row to reduce clutter */}

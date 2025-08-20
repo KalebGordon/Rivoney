@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import "../styles/ResumeGenerator.css"; // consolidated styles
+import "../styles/ResumeGenerator.css";
 
 export default function ResumeBuilder() {
   // ---------- API ----------
@@ -30,7 +30,7 @@ export default function ResumeBuilder() {
   const [gapStatus, setGapStatus] = useState("idle"); // idle | generating | ready | error
   const [gapError, setGapError] = useState("");
 
-  // experience/education dropdown options (fetched)
+  // experience dropdown options (fetched)
   const [experienceOptions, setExperienceOptions] = useState([
     "Leidos",
     "City of Mansfield",
@@ -42,7 +42,7 @@ export default function ResumeBuilder() {
     enhance: false,
   });
 
-  // --- Section 3: Resume Generation (JSON preview for testing) ---
+  // --- Section 3: Resume Generation (JSON preview) ---
   const [previewJSON, setPreviewJSON] = useState(null);
   const [genStatus, setGenStatus] = useState("idle"); // idle | generating | ready | error
   const [genError, setGenError] = useState("");
@@ -59,8 +59,8 @@ export default function ResumeBuilder() {
     Array.isArray(v)
       ? v.map((r) => ({ text: "", experience: experienceOptions[0] ?? "", enhance: false, ...r }))
       : v
-        ? [{ text: String(v), experience: experienceOptions[0] ?? "", enhance: false }]
-        : [];
+      ? [{ text: String(v), experience: experienceOptions[0] ?? "", enhance: false }]
+      : [];
 
   // ---------- Fetch dropdown options on mount ----------
   useEffect(() => {
@@ -69,7 +69,6 @@ export default function ResumeBuilder() {
         const data = await fetchJSON("/template/options", { method: "GET" });
         if (Array.isArray(data?.options) && data.options.length) {
           setExperienceOptions(data.options);
-          // Ensure any existing rows have a valid option selected (state-only; no storage writes)
           setAnswers((prev) => {
             const next = { ...prev };
             Object.keys(next).forEach((k) => {
@@ -170,7 +169,7 @@ export default function ResumeBuilder() {
     const data = await fetchJSON("/analyze/gaps", {
       method: "POST",
       body: JSON.stringify({
-        user_id: "demo", // or send `resume: theJsonResume`
+        user_id: "demo",
         job_description: jobText,
       }),
     });
@@ -178,20 +177,14 @@ export default function ResumeBuilder() {
   }
 
   async function generateResume(jobText, answersPayload, questionsPayload) {
-    const resume_template = {
-      user_id: "demo",
-      summary: "",
-      experiences: [],
-      education: [],
-    };
-
+    // The server loads the saved baseline by user_id and then
+    // calls a GPT-5 Thinking pass to route/apply answers.
     return fetchJSON("/generate", {
       method: "POST",
       body: JSON.stringify({
         job_description: jobText,
-        answers: answersPayload,            // { [qIdx]: [{text, experience, enhance}] }
-        questions: questionsPayload ?? [],  // <-- NEW: pass gapQuestions
-        resume: resume_template,            // optional: keeps shape if no saved resume
+        answers: answersPayload,           // { [qIdx]: [{text, experience, enhance}] }
+        questions: questionsPayload ?? [],
       }),
     });
   }
@@ -248,7 +241,7 @@ export default function ResumeBuilder() {
     setEditedPreviewText("");
 
     try {
-      const payload = await generateResume(jobPost, answers, gapQuestions); // <-- pass questions
+      const payload = await generateResume(jobPost, answers, gapQuestions);
       setPreviewJSON(payload); // state only; no storage
       setGenStatus("ready");
       requestAnimationFrame(() => scrollTo(section3Ref));
@@ -270,7 +263,7 @@ export default function ResumeBuilder() {
   function handleSaveEditedPreview() {
     try {
       const parsed = JSON.parse(editedPreviewText);
-      setPreviewJSON(parsed); // state only; no storage
+      setPreviewJSON(parsed); // state only
       setIsEditingPreview(false);
     } catch (e) {
       alert("Invalid JSON. Please fix formatting.");
@@ -333,160 +326,177 @@ export default function ResumeBuilder() {
         aria-hidden={gapStatus === "idle"}
       >
         <h2>Gap Analysis</h2>
-        {gapStatus === "generating" && <p className="muted">Creating questions…</p>}
+        {gapStatus === "generating" && (
+          <p className="muted">Creating questions…</p>
+        )}
         {gapStatus === "error" && (
-          <p className="error">{gapError || "Something went wrong. Try again."}</p>
+          <p className="error">
+            {gapError || "Something went wrong. Try again."}
+          </p>
         )}
 
         {gapStatus === "ready" && (
           <>
-            <p>Answer the questions below so we can tailor your resume.</p>
+            {gapQuestions.length > 0 ? (
+              <>
+                <p>Answer the questions below so we can tailor your resume.</p>
 
-            <ol className="qa-list">
-              {gapQuestions.map((q, i) => {
-                const qTitle        = typeof q === "string" ? q : q?.question ?? "";
-                const tags          = Array.isArray(q?.skill_tags) ? q.skill_tags : [];
-                const priority      = typeof q === "object" ? q?.priority : null;
-                const jdGap         = typeof q === "object" ? q?.jd_gap : "";
-                const gapReason     = typeof q === "object" ? q?.gap_reason : "";
-                const coverage      = typeof q === "object" ? q?.coverage_status : null; // "missing" | "weak"
-                const answerHint    = typeof q === "object" ? q?.answer_hint : "";
-                const bulletSkeleton= typeof q === "object" ? q?.bullet_skeleton : "";
-                const exampleBullet = typeof q === "object" ? q?.example_bullet : "";
+                <ol className="qa-list">
+                  {gapQuestions.map((q, i) => {
+                    const qTitle        = typeof q === "string" ? q : q?.question ?? "";
+                    const tags          = Array.isArray(q?.skill_tags) ? q.skill_tags : [];
+                    const priority      = typeof q === "object" ? q?.priority : null;
+                    const jdGap         = typeof q === "object" ? q?.jd_gap : "";
+                    const gapReason     = typeof q === "object" ? q?.gap_reason : "";
+                    const coverage      = typeof q === "object" ? q?.coverage_status : null;
+                    const answerHint    = typeof q === "object" ? q?.answer_hint : "";
+                    const bulletSkeleton= typeof q === "object" ? q?.bullet_skeleton : "";
+                    const exampleBullet = typeof q === "object" ? q?.example_bullet : "";
 
-                // Try to preselect the linked experience from target_anchor
-                const anchor =
-                  typeof q === "object" && typeof q?.target_anchor === "string"
-                    ? q.target_anchor
-                    : "";
-                const matchedOpt = experienceOptions.find(
-                  (opt) => anchor && opt.toLowerCase().includes(anchor.toLowerCase())
-                );
-                const defaultOpt = matchedOpt || experienceOptions[0] || "";
+                    const anchor =
+                      typeof q === "object" && typeof q?.target_anchor === "string"
+                        ? q.target_anchor
+                        : "";
+                    const matchedOpt = experienceOptions.find(
+                      (opt) =>
+                        anchor && opt.toLowerCase().includes(anchor.toLowerCase())
+                    );
+                    const defaultOpt = matchedOpt || experienceOptions[0] || "";
 
-                // Normalize rows for this question
-                const rows = toRows(answers[i] || [newRow()]);
+                    const rows = toRows(answers[i] || [newRow()]);
 
-                return (
-                  <li key={i} className="qa-item">
-                    <div className="q">{qTitle}</div>
+                    return (
+                      <li key={i} className="qa-item">
+                        <div className="q">{qTitle}</div>
 
-                    {/* Gap context (identified from JD + why) */}
-                    {(jdGap || gapReason || coverage) && (
-                      <div className="gap-context">
-                        {coverage && (
-                          <span className={`coverage-badge ${coverage}`}>
-                            {coverage === "missing" ? "Missing" : "Weak"}
-                          </span>
-                        )}
-                        {jdGap && <blockquote className="jd-gap">“{jdGap}”</blockquote>}
-                        {gapReason && <div className="gap-reason">{gapReason}</div>}
-                      </div>
-                    )}
-
-                    {/* Meta (priority + tags) */}
-                    {(priority || tags.length > 0) && (
-                      <div className="mini-meta">
-                        {priority && (
-                          <span className={`mini-priority ${priority || ""}`}>
-                            Priority: {priority}
-                          </span>
-                        )}
-                        {tags.length > 0 && (
-                          <div className="mini-tags">
-                            {tags.map((t) => (
-                              <span key={t} className="tag">
-                                {t}
+                        {(jdGap || gapReason || coverage) && (
+                          <div className="gap-context">
+                            {coverage && (
+                              <span className={`coverage-badge ${coverage}`}>
+                                {coverage === "missing" ? "Missing" : "Weak"}
                               </span>
-                            ))}
+                            )}
+                            {jdGap && <blockquote className="jd-gap">“{jdGap}”</blockquote>}
+                            {gapReason && <div className="gap-reason">{gapReason}</div>}
                           </div>
                         )}
-                      </div>
-                    )}
 
-                    {/* Micro-guidance for answering */}
-                    {(answerHint || bulletSkeleton || exampleBullet) && (
-                      <div className="answer-guidance">
-                        {answerHint && <div className="mini-hint">{answerHint}</div>}
-                        {bulletSkeleton && (
-                          <div className="mini-skeleton">
-                            Skeleton: <code>{bulletSkeleton}</code>
+                        {(priority || tags.length > 0) && (
+                          <div className="mini-meta">
+                            {priority && (
+                              <span className={`mini-priority ${priority || ""}`}>
+                                Priority: {priority}
+                              </span>
+                            )}
+                            {tags.length > 0 && (
+                              <div className="mini-tags">
+                                {tags.map((t) => (
+                                  <span key={t} className="tag">
+                                    {t}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         )}
-                        {exampleBullet && (
-                          <div className="mini-example">e.g., {exampleBullet}</div>
+
+                        {(answerHint || bulletSkeleton || exampleBullet) && (
+                          <div className="answer-guidance">
+                            {answerHint && <div className="mini-hint">{answerHint}</div>}
+                            {bulletSkeleton && (
+                              <div className="mini-skeleton">
+                                Skeleton: <code>{bulletSkeleton}</code>
+                              </div>
+                            )}
+                            {exampleBullet && (
+                              <div className="mini-example">e.g., {exampleBullet}</div>
+                            )}
+                          </div>
                         )}
-                      </div>
-                    )}
 
-                    {rows.map((row, rIdx) => (
-                      <div key={rIdx} className="qa-row">
-                        <span className="answer-label">Answer {rIdx + 1}</span>
+                        {rows.map((row, rIdx) => (
+                          <div key={rIdx} className="qa-row">
+                            <span className="answer-label">Answer {rIdx + 1}</span>
 
-                        <textarea
-                          aria-label={`Answer ${i + 1} - response ${rIdx + 1}`}
-                          value={row.text || ""}
-                          onChange={(e) =>
-                            handleRowChange(i, rIdx, "text", e.target.value)
-                          }
-                          rows={4}
-                          placeholder={
-                            bulletSkeleton ||
-                            "Start with a verb; include tools, scope, metric, outcome."
-                          }
-                        />
-
-                        <div className="qa-controls">
-                          <label
-                            className="select-wrap"
-                            aria-label="Link to experience or education"
-                          >
-                            <span className="mini-label">Link to:</span>
-                            <select
-                              value={row.experience || defaultOpt}
+                            <textarea
+                              aria-label={`Answer ${i + 1} - response ${rIdx + 1}`}
+                              value={row.text || ""}
                               onChange={(e) =>
-                                handleRowChange(i, rIdx, "experience", e.target.value)
+                                handleRowChange(i, rIdx, "text", e.target.value)
                               }
-                            >
-                              {experienceOptions.map((opt) => (
-                                <option key={opt} value={opt}>
-                                  {opt}
-                                </option>
-                              ))}
-                            </select>
-                          </label>
+                              rows={4}
+                              placeholder={
+                                bulletSkeleton ||
+                                "Start with a verb; include tools, scope, metric, outcome."
+                              }
+                            />
+
+                            <div className="qa-controls">
+                              <label
+                                className="select-wrap"
+                                aria-label="Link to experience or education"
+                              >
+                                <span className="mini-label">Link to:</span>
+                                <select
+                                  value={row.experience || defaultOpt}
+                                  onChange={(e) =>
+                                    handleRowChange(i, rIdx, "experience", e.target.value)
+                                  }
+                                >
+                                  {experienceOptions.map((opt) => (
+                                    <option key={opt} value={opt}>
+                                      {opt}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                            </div>
+                          </div>
+                        ))}
+
+                        <div className="qa-actions">
+                          <button
+                            type="button"
+                            className="remove-btn"
+                            onClick={() => removeAnswerRow(i)}
+                            disabled={toRows(answers[i]).length <= 1}
+                          >
+                            Remove answer
+                          </button>
+
+                          <button type="button" onClick={() => addAnswerRow(i)}>
+                            Add answer
+                          </button>
                         </div>
-                      </div>
-                    ))}
+                      </li>
+                    );
+                  })}
+                </ol>
 
-                    <div className="qa-actions">
-                      <button
-                        type="button"
-                        className="remove-btn"
-                        onClick={() => removeAnswerRow(i)}
-                        disabled={toRows(answers[i]).length <= 1}
-                      >
-                        Remove answer
-                      </button>
-
-                      <button type="button" onClick={() => addAnswerRow(i)}>
-                        Add answer
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
-
-            <div className="button-row">
-              <button
-                type="button"
-                onClick={handleGenerate}
-                disabled={!allAnswered || genStatus === "generating"}
-              >
-                {genStatus === "generating" ? "Generating…" : "Generate resume"}
-              </button>
-            </div>
+                <div className="button-row">
+                  <button
+                    type="button"
+                    onClick={handleGenerate}
+                    disabled={!allAnswered || genStatus === "generating"}
+                  >
+                    {genStatus === "generating" ? "Generating…" : "Generate resume"}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="muted">Looking great! No meaningful gaps found.</p>
+                <div className="button-row">
+                  <button
+                    type="button"
+                    onClick={handleGenerate}
+                    disabled={genStatus === "generating"}
+                  >
+                    {genStatus === "generating" ? "Generating…" : "Generate resume"}
+                  </button>
+                </div>
+              </>
+            )}
           </>
         )}
       </section>
