@@ -16,10 +16,10 @@ const ExperienceForm = ({ experience, setExperience }) => {
           <input type="text" className="resume-form" placeholder="Title" value={exp.title} onChange={handleChange(setExperience, i, 'title')} />
           
           <label>Start Date</label>
-          <input type="date" value={exp.startDate} onChange={handleChange(setExperience, i, 'startDate')} />
+          <input type="month" value={exp.startDate} onChange={handleChange(setExperience, i, 'startDate')} />
 
           <label>End Date</label>
-          <input type="date" value={exp.isCurrent ? '' : exp.endDate} onChange={handleChange(setExperience, i, 'endDate')} disabled={exp.isCurrent} />
+          <input type="month" value={exp.isCurrent ? '' : exp.endDate} onChange={handleChange(setExperience, i, 'endDate')} disabled={exp.isCurrent} />
 
           <div style={{ marginTop: '-1rem', marginBottom: '1rem', display: 'flex', justifyContent: 'flex-start' }}>
             <label htmlFor={`currentExp-${i}`} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap' }}>

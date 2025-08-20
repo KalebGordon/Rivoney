@@ -39,11 +39,10 @@ export const AwardsForm = ({ awards, setAwards }) => {
           />
 
           <input
-            type="date"
+            type="month"
             className="form-input"
-            placeholder="YYYY-MM-DD"
-            value={award.date || ""}
-            onChange={handleChange(setAwards, i, "date")}
+            value={award.date ?? ""}                     // read from `date`
+            onChange={handleChange(setAwards, i, "date")} // write to `date` too
           />
 
           <textarea

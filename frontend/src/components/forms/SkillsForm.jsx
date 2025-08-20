@@ -20,9 +20,9 @@ const SkillsForm = ({ skills, setSkills }) => {
 
   return (
     <>
+      <h3>Skill</h3>
       {(skills || []).map((skill, i) => (
         <div key={i} style={{ marginBottom: "1.5rem" }}>
-          <h3>Skill</h3>
 
           <input
             type="text"

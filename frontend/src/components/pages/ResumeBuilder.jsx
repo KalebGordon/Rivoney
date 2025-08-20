@@ -80,10 +80,9 @@ function mapToJsonResume({
       // forms give strings; normalize to JSON Resume objects
       profiles: safeBasics.profiles.map(p =>
         typeof p === "string"
-          ? { network: "", username: p, url: "" }
+          ? { network: "", url: "" }
           : {
               network: p.network || "",
-              username: p.username || "",
               url: p.url || ""
             }
       )

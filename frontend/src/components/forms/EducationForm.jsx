@@ -50,14 +50,14 @@ const EducationForm = ({ education, setEducation }) => {
 
           <label>Start Date</label>
           <input
-            type="date"
+            type="month"
             value={edu.startDate || ''}
             onChange={handleChange(setEducation, i, 'startDate')}
           />
 
           <label>End Date</label>
           <input
-            type="date"
+            type="month"
             value={edu.isCurrent ? '' : (edu.endDate || '')}
             onChange={handleChange(setEducation, i, 'endDate')}
             disabled={edu.isCurrent}

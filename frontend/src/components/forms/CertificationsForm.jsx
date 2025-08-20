@@ -29,7 +29,7 @@ const CertificationsForm = ({ certifications, setCertifications }) => {
 
           <label>Date</label>
           <input
-            type="date"
+            type="month"
             className="form-input"
             value={cert.date || ''}
             onChange={handleChange(setCertifications, i, 'date')}

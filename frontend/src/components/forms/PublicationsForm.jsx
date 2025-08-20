@@ -40,7 +40,7 @@ export const PublicationsForm = ({ publications, setPublications }) => {
 
           <label>Date</label>
           <input
-            type="date"
+            type="month"
             className="form-input"
             placeholder="Release Date"
             value={pub.releaseDate || ""}
