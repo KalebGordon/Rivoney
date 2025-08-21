@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import AddRemoveButton from '../ui/AddRemoveButton';
-import { useFormHandlers } from '../hooks/useFormHandlers';
-import { initialCertificate } from '../utils/defaultTemplates';
+import React, { useEffect } from "react";
+import AddRemoveButton from "../ui/AddRemoveButton";
+import { useFormHandlers } from "../hooks/useFormHandlers";
+import { initialCertificate } from "../utils/defaultTemplates";
 
 const CertificationsForm = ({ certifications, setCertifications }) => {
   const { handleChange, handleAdd } = useFormHandlers();
@@ -14,54 +14,54 @@ const CertificationsForm = ({ certifications, setCertifications }) => {
   }, [certifications, setCertifications]);
 
   return (
-    <>
+    <section className="section-card">
+      <h3>Certifications</h3>
 
-      {certifications.map((cert, i) => (
-        <div key={i} style={{ marginBottom: '1.5rem' }}>
-          <h3>Certification</h3>
+      {(certifications || []).map((cert, i) => (
+        <div key={i} style={{ marginBottom: "1.5rem" }}>
           <input
             type="text"
             className="form-input"
             placeholder="Certificate Name"
-            value={cert.name || ''}
-            onChange={handleChange(setCertifications, i, 'name')}
+            value={cert.name || ""}
+            onChange={handleChange(setCertifications, i, "name")}
           />
 
           <label>Date</label>
           <input
             type="month"
             className="form-input"
-            value={cert.date || ''}
-            onChange={handleChange(setCertifications, i, 'date')}
+            value={cert.date || ""}
+            onChange={handleChange(setCertifications, i, "date")}
           />
 
           <input
             type="text"
             className="form-input"
             placeholder="Issuer"
-            value={cert.issuer || ''}
-            onChange={handleChange(setCertifications, i, 'issuer')}
+            value={cert.issuer || ""}
+            onChange={handleChange(setCertifications, i, "issuer")}
           />
 
           <input
             type="url"
             className="form-input"
             placeholder="Certificate URL"
-            value={cert.url || ''}
-            onChange={handleChange(setCertifications, i, 'url')}
+            value={cert.url || ""}
+            onChange={handleChange(setCertifications, i, "url")}
           />
 
-          {certifications.length - 1 === i && (
-            <AddRemoveButton
-              label="Certification"
-              onAdd={handleAdd(setCertifications, initialCertificate)}
-            />
-          )}
+          {/* Divider between rows (not after the last) */}
+          {i < (certifications?.length ?? 0) - 1 && <hr />}
         </div>
       ))}
 
-      <hr />
-    </>
+      {/* Single add button adds another certification row within the same section */}
+      <AddRemoveButton
+        label="Certification"
+        onAdd={handleAdd(setCertifications, initialCertificate)}
+      />
+    </section>
   );
 };
 

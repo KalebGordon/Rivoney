@@ -10,6 +10,7 @@ import { initialAward } from "../utils/defaultTemplates";
 export const AwardsForm = ({ awards, setAwards }) => {
   const { handleChange, handleAdd } = useFormHandlers();
 
+  // Ensure at least one row exists
   useEffect(() => {
     if (!awards || awards.length === 0) {
       setAwards([initialAward]);
@@ -17,11 +18,11 @@ export const AwardsForm = ({ awards, setAwards }) => {
   }, [awards, setAwards]);
 
   return (
-    <>
+    <section className="section-card">
+      <h3>Awards</h3>
+
       {(awards || []).map((award, i) => (
         <div key={i} style={{ marginBottom: "1.5rem" }}>
-          <h3>Award</h3>
-
           <input
             type="text"
             className="form-input"
@@ -41,8 +42,8 @@ export const AwardsForm = ({ awards, setAwards }) => {
           <input
             type="month"
             className="form-input"
-            value={award.date ?? ""}                     // read from `date`
-            onChange={handleChange(setAwards, i, "date")} // write to `date` too
+            value={award.date || ""}
+            onChange={handleChange(setAwards, i, "date")}
           />
 
           <textarea
@@ -53,12 +54,17 @@ export const AwardsForm = ({ awards, setAwards }) => {
             onChange={handleChange(setAwards, i, "summary")}
           />
 
-          {awards.length - 1 === i && (
-            <AddRemoveButton label="Award" onAdd={handleAdd(setAwards, initialAward)} />
-          )}
+          {/* Divider between rows (not after the last) */}
+          {i < (awards?.length ?? 0) - 1 && <hr />}
         </div>
       ))}
-    </>
+
+      {/* Single add button adds another award row within the same section */}
+      <AddRemoveButton
+        label="Award"
+        onAdd={handleAdd(setAwards, initialAward)}
+      />
+    </section>
   );
 };
 

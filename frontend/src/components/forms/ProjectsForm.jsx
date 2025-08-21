@@ -1,13 +1,13 @@
-import React, { useEffect } from 'react';
-import AddRemoveButton from '../ui/AddRemoveButton';
-import DescriptionList from './DescriptionList';
-import { useFormHandlers } from '../hooks/useFormHandlers';
-import { initialProject } from '../utils/defaultTemplates';
+import React, { useEffect } from "react";
+import AddRemoveButton from "../ui/AddRemoveButton";
+import DescriptionList from "./DescriptionList";
+import { useFormHandlers } from "../hooks/useFormHandlers";
+import { initialProject } from "../utils/defaultTemplates";
 
 const ProjectsForm = ({ projects, setProjects }) => {
   const { handleChange, handleAdd } = useFormHandlers();
 
-  // Ensure at least one project row exists on mount/when projects is empty
+  // Ensure at least one project row exists
   useEffect(() => {
     if (!projects || projects.length === 0) {
       setProjects([initialProject]);
@@ -15,32 +15,32 @@ const ProjectsForm = ({ projects, setProjects }) => {
   }, [projects, setProjects]);
 
   return (
-    <>
+    <section className="section-card">
+      <h3>Projects</h3>
 
-      {projects.map((proj, i) => (
-        <div key={i} style={{ marginBottom: '1.5rem' }}>
-          <h3>Project</h3>
+      {(projects || []).map((proj, i) => (
+        <div key={i} style={{ marginBottom: "1.5rem" }}>
           <input
             type="text"
             className="form-input"
             placeholder="Project Name"
-            value={proj.name || ''}
-            onChange={handleChange(setProjects, i, 'name')}
+            value={proj.name || ""}
+            onChange={handleChange(setProjects, i, "name")}
           />
 
           <input
             type="url"
             className="form-input"
             placeholder="Project URL"
-            value={proj.url || ''}
-            onChange={handleChange(setProjects, i, 'url')}
+            value={proj.url || ""}
+            onChange={handleChange(setProjects, i, "url")}
           />
 
-          <div style={{ marginTop: '1rem' }}>
+          <div style={{ marginTop: "1rem" }}>
             <DescriptionList
               description={proj.highlights || []}
               onChange={(j, value) =>
-                setProjects(prev =>
+                setProjects((prev) =>
                   prev.map((item, idx) =>
                     idx === i
                       ? {
@@ -54,22 +54,27 @@ const ProjectsForm = ({ projects, setProjects }) => {
                 )
               }
               onRemove={(j) =>
-                setProjects(prev =>
+                setProjects((prev) =>
                   prev.map((item, idx) =>
                     idx === i
                       ? {
                           ...item,
-                          highlights: (item.highlights || []).filter((_, dj) => dj !== j),
+                          highlights: (item.highlights || []).filter(
+                            (_, dj) => dj !== j
+                          ),
                         }
                       : item
                   )
                 )
               }
               onAdd={() =>
-                setProjects(prev =>
+                setProjects((prev) =>
                   prev.map((item, idx) =>
                     idx === i
-                      ? { ...item, highlights: [...(item.highlights || []), ''] }
+                      ? {
+                          ...item,
+                          highlights: [...(item.highlights || []), ""],
+                        }
                       : item
                   )
                 )
@@ -78,15 +83,17 @@ const ProjectsForm = ({ projects, setProjects }) => {
             />
           </div>
 
-          {projects.length - 1 === i && (
-            <AddRemoveButton
-              label="Project"
-              onAdd={handleAdd(setProjects, initialProject)}
-            />
-          )}
+          {/* Divider between rows (not after the last) */}
+          {i < (projects?.length ?? 0) - 1 && <hr />}
         </div>
       ))}
-    </>
+
+      {/* Single add button adds another project row within the same section */}
+      <AddRemoveButton
+        label="Project"
+        onAdd={handleAdd(setProjects, initialProject)}
+      />
+    </section>
   );
 };
 

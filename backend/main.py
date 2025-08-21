@@ -971,7 +971,7 @@ class GenerateResponse(BaseModel):
     resume: Dict
 
 # ---------- LLM: Generate gap questions ----------
-def generate_gap_questions(resume: Dict, job_description: str, max_q: int = 2) -> List[QuestionItem]:
+def generate_gap_questions(resume: Dict, job_description: str, max_q: int = 5) -> List[QuestionItem]:
     resume_snippet = json.dumps(resume, ensure_ascii=False, separators=(",", ":"))
 
     system_msg = """
@@ -980,7 +980,7 @@ def generate_gap_questions(resume: Dict, job_description: str, max_q: int = 2) -
 
         Optimization goals (in order):
         1) Prefer portable, résumé-worthy facts (tools used, scope/scale, measurable impact, artifacts, compliance) over JD-specific one-offs.
-        2) Each question should elicit a single bullet-ready fragment (no first-person; past tense if completed, present for ongoing).
+        2) Each question should elicit a concise fact/evidence fragment (e.g., tools, scope, metric, artifact). Do NOT instruct the user to "provide a bullet".
         3) Maximize searchability (keywords), credibility (metrics/artifacts), and clarity (scope/role).
 
         Do NOT ask:
@@ -989,11 +989,11 @@ def generate_gap_questions(resume: Dict, job_description: str, max_q: int = 2) -
         - Anything already present or generic duplicates.
         - Cover-letter prompts.
 
-        Output rules:
-        - Return at most {max_q} questions; return [] if no high-value gaps.
-        - No preambles/explanations. No duplicates.
-        - For each question, include: jd_gap, gap_reason, coverage_status, response_tier, optional: target_section, target_anchor, skill_tags, bullet_skeleton, example_bullet.
-        - STRICT JSON.
+        Output rules (STRICT JSON):
+        - Return at most {max_q} items in an array under key "questions".
+        - Each item MUST include: question, jd_gap, gap_reason, coverage_status (one of: "missing","weak").
+        - Optional: response_tier ("skill","context","highlight"), target_section, target_anchor, skill_tags, answer_hint.
+        - Keep values concise (<= 220 chars where sensible).
     """.strip().format(max_q=max_q)
 
     user_msg = (
@@ -1020,8 +1020,6 @@ def generate_gap_questions(resume: Dict, job_description: str, max_q: int = 2) -
                         "gap_reason": {"type": "string"},
                         "coverage_status": {"type": "string", "enum": ["missing", "weak"]},
                         "answer_hint": {"type": "string"},
-                        "bullet_skeleton": {"type": "string"},
-                        "example_bullet": {"type": "string"},
                         "target_section": {
                             "type": "string",
                             "enum": ["work", "projects", "skills", "education", "certifications"],
@@ -1035,6 +1033,9 @@ def generate_gap_questions(resume: Dict, job_description: str, max_q: int = 2) -
                         },
                         "priority": {"type": "string", "enum": ["high", "medium"]},
                         "response_tier": {"type": "string", "enum": ["skill", "context", "highlight"]},
+                        # We still accept skeleton/example if the model sends them, but we won't render them.
+                        "bullet_skeleton": {"type": "string"},
+                        "example_bullet": {"type": "string"},
                     },
                     "required": ["question", "jd_gap", "gap_reason", "coverage_status"],
                 },
@@ -1053,104 +1054,180 @@ def generate_gap_questions(resume: Dict, job_description: str, max_q: int = 2) -
             ],
         )
 
-    # First attempt: json_schema
-    try:
-        resp = _call_openai(
-            {
-                "type": "json_schema",
-                "json_schema": {
-                    "name": "GapQuestions",
-                    "schema": schema,
-                    "strict": True,
-                },
-            }
-        )
-    except APIStatusError as e:
-        if e.status_code == 400:
-            resp = _call_openai({"type": "json_object"})
-        else:
-            raise
-    except RateLimitError as e:
-        raise HTTPException(status_code=429, detail="OpenAI rate limit. Please retry shortly.") from e
-    except APIConnectionError as e:
-        raise HTTPException(
-            status_code=502,
-            detail="Could not reach OpenAI (network/TLS). Check VPN/proxy, allowlist api.openai.com:443, or set HTTPS_PROXY.",
-        ) from e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Unexpected error calling OpenAI.") from e
+    # Prefer schema; fallback to lenient json_object
+    def _fetch_raw_json(prefer_schema=True) -> str:
+        if prefer_schema:
+            try:
+                resp = _call_openai(
+                    {
+                        "type": "json_schema",
+                        "json_schema": {
+                            "name": "GapQuestions",
+                            "schema": schema,
+                            "strict": True,
+                        },
+                    }
+                )
+                return resp.choices[0].message.content or "{}"
+            except APIStatusError as e:
+                if e.status_code != 400:
+                    raise
+        resp2 = _call_openai({"type": "json_object"})
+        return resp2.choices[0].message.content or "{}"
 
-    content = resp.choices[0].message.content or "{}"
+    content = _fetch_raw_json(prefer_schema=True)
     if DEBUG_GAPS:
         print("\n--- [GAPS RAW CONTENT] ---")
-        print(content[:2000])  # don’t spam logs
+        print(content[:2000])
         print("--- [END RAW CONTENT] ---\n")
 
-    # Parse pass #1
-    items: List[QuestionItem] = []
+    # Normalizers
+    def norm_cov(v: Optional[str]) -> str:
+        s = (v or "").strip().lower()
+        if s in ("missing", "absent", "not_covered", "not covered", "none"):
+            return "missing"
+        if s.startswith("partial") or "weak" in s or s == "weak":
+            return "weak"
+        return "weak"
+
+    def norm_tier(v: Optional[str], text: str) -> Optional[str]:
+        s = (v or "").strip().lower()
+        if s in ("skill", "context", "highlight"):
+            return s
+        n = len(text or "")
+        if n < 80: return "skill"
+        if n < 160: return "context"
+        return "highlight"
+
+    def norm_anchor(a: Optional[str]) -> Optional[str]:
+        if not a:
+            return a
+        s = a.strip().replace("—", "-").replace("–", "-")
+        return s.split("-")[0].strip() if "-" in s else s
+
+    def clamp(s: Optional[str], n: int) -> Optional[str]:
+        return (s or "")[:n] if s else s
+
+    # Cleaner synthesized questions, no "provide a bullet"
+    def synthesize_question(it: dict) -> str:
+        q = (it.get("question") or "").strip()
+        if q:
+            return q
+        jd = (it.get("jd_gap") or "").strip()
+        if jd:
+            return f"{jd} — include tools, scale, artifact, and one metric."
+        return "Add concise evidence: tools used, scope/scale, artifact, and one measurable outcome."
+
+    # Parse + normalize
     try:
         data = json.loads(content)
-        raw_items = data.get("questions", [])
-        seen = set()
-
-        for it in raw_items:
-            if isinstance(it, str):
-                qtext = it.strip()
-                if not qtext or qtext in seen:
-                    continue
-                items.append(QuestionItem(question=qtext))
-                seen.add(qtext)
-            elif isinstance(it, dict):
-                qtext = str(it.get("question", "")).strip()
-                if not qtext or qtext in seen:
-                    continue
-                try:
-                    items.append(QuestionItem(**{**it, "question": qtext}))
-                except ValidationError:
-                    items.append(QuestionItem(question=qtext))
-                seen.add(qtext)
-        items = items[:max_q]
     except Exception as e:
         if DEBUG_GAPS:
-            print("[GAPS PARSE ERROR]", repr(e))
-            print("[GAPS CONTENT THAT FAILED]", content[:2000])
-        items = []
+            print("[GAPS PARSE ERROR 1]", repr(e))
+        data = {}
 
-    # If empty, second attempt with json_object
+    raw_items = data.get("questions", []) if isinstance(data, dict) else []
+    if DEBUG_GAPS:
+        print(f"[GAPS] raw_items count: {len(raw_items)}")
+
+    items: List[QuestionItem] = []
+    seen = set()
+
+    for it in (raw_items or []):
+        if not isinstance(it, dict):
+            continue
+        qtext = clamp(synthesize_question(it), 220)
+        jd_gap = clamp((it.get("jd_gap") or "").strip(), 220)
+        gap_reason = clamp((it.get("gap_reason") or "").strip(), 220)
+        cov = norm_cov(it.get("coverage_status"))
+        tier = norm_tier(it.get("response_tier"), qtext or jd_gap)
+
+        section = it.get("target_section") if it.get("target_section") in ("work","projects","skills","education","certifications") else None
+        anchor = norm_anchor(it.get("target_anchor"))
+
+        payload = {
+            "question": qtext,
+            "jd_gap": jd_gap,
+            "gap_reason": gap_reason,
+            "coverage_status": cov,
+            "answer_hint": clamp(it.get("answer_hint"), 220),
+            "bullet_skeleton": clamp(it.get("bullet_skeleton"), 260),  # accepted but not used in UI
+            "example_bullet": clamp(it.get("example_bullet"), 260),    # accepted but not used in UI
+            "target_section": section,
+            "target_anchor": anchor,
+            "suggested_fields": it.get("suggested_fields"),
+            "skill_tags": it.get("skill_tags"),
+            "evidence_type": it.get("evidence_type"),
+            "priority": it.get("priority") if it.get("priority") in ("high","medium") else "medium",
+            "response_tier": tier,
+        }
+
+        if qtext and qtext not in seen:
+            try:
+                items.append(QuestionItem(**payload))
+                seen.add(qtext)
+            except ValidationError:
+                # fallback minimal
+                try:
+                    items.append(QuestionItem(
+                        question=qtext,
+                        jd_gap=jd_gap,
+                        gap_reason=gap_reason,
+                        coverage_status=cov
+                    ))
+                    seen.add(qtext)
+                except Exception as ve:
+                    if DEBUG_GAPS:
+                        print("[GAPS] Dropped item after validation:", ve)
+
     if not items:
         if DEBUG_GAPS:
             print("[GAPS] Empty after first pass. Retrying with json_object fallback.")
+        content2 = _fetch_raw_json(prefer_schema=False)
+        if DEBUG_GAPS:
+            print("\n--- [GAPS RAW CONTENT 2] ---")
+            print(content2[:2000])
+            print("--- [END RAW CONTENT 2] ---\n")
         try:
-            resp2 = _call_openai({"type": "json_object"})
-            content2 = resp2.choices[0].message.content or "{}"
-            if DEBUG_GAPS:
-                print("\n--- [GAPS RAW CONTENT 2] ---")
-                print(content2[:2000])
-                print("--- [END RAW CONTENT 2] ---\n")
             data2 = json.loads(content2)
-            raw_items2 = data2.get("questions", [])
-            items2: List[QuestionItem] = []
-            seen2 = set()
-            for it in raw_items2:
-                if isinstance(it, str):
-                    qtext = it.strip()
-                    if qtext and qtext not in seen2:
-                        items2.append(QuestionItem(question=qtext))
-                        seen2.add(qtext)
-                elif isinstance(it, dict):
-                    qtext = str(it.get("question", "")).strip()
-                    if qtext and qtext not in seen2:
-                        try:
-                            items2.append(QuestionItem(**{**it, "question": qtext}))
-                        except ValidationError:
-                            items2.append(QuestionItem(question=qtext))
-                        seen2.add(qtext)
-            return items2[:max_q]
-        except Exception as e2:
+        except Exception as e:
             if DEBUG_GAPS:
-                print("[GAPS FALLBACK ERROR]", repr(e2))
+                print("[GAPS PARSE ERROR 2]", repr(e))
+            data2 = {}
+        # Re-run same normalization on fallback
+        for it in (data2.get("questions", []) if isinstance(data2, dict) else []):
+            if not isinstance(it, dict):
+                continue
+            qtext = clamp(synthesize_question(it), 220)
+            jd_gap = clamp((it.get("jd_gap") or "").strip(), 220)
+            gap_reason = clamp((it.get("gap_reason") or "").strip(), 220)
+            cov = norm_cov(it.get("coverage_status"))
+            tier = norm_tier(it.get("response_tier"), qtext or jd_gap)
+            section = it.get("target_section") if it.get("target_section") in ("work","projects","skills","education","certifications") else None
+            anchor = norm_anchor(it.get("target_anchor"))
+            if qtext and qtext not in seen:
+                try:
+                    items.append(QuestionItem(
+                        question=qtext,
+                        jd_gap=jd_gap,
+                        gap_reason=gap_reason,
+                        coverage_status=cov,
+                        response_tier=tier,
+                        target_section=section,
+                        target_anchor=anchor,
+                        answer_hint=clamp(it.get("answer_hint"), 220),
+                        skill_tags=it.get("skill_tags"),
+                    ))
+                    seen.add(qtext)
+                except Exception:
+                    pass
 
-    return items
+    if DEBUG_GAPS:
+        print(f"[GAPS] normalized items count: {len(items)}")
+        for i, it in enumerate(items):
+            print(f"  - Q{i+1}: {it.question[:140]}")
+
+    return items[:max_q]
 
 # ---------- LLM: Apply answers as operations ----------
 def apply_answers_with_llm(baseline: Dict, job_description: str, questions: List[QuestionItem], answers: Dict[int, List[AnswerRow]]) -> Dict:
@@ -1420,6 +1497,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        # add more if needed: "http://localhost:5173", "http://127.0.0.1:5173",
     ],
     allow_methods=["*"],
     allow_headers=["*"],

@@ -1,7 +1,8 @@
+// File: components/ResumeGenerator.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "../styles/ResumeGenerator.css";
 
-export default function ResumeBuilder() {
+export default function ResumeGenerator() {
   // ---------- API ----------
   const API_BASE = process.env.REACT_APP_API_BASE ?? "http://localhost:8000";
 
@@ -26,7 +27,7 @@ export default function ResumeBuilder() {
 
   // --- Section 2: Gap Analysis ---
   const [gapQuestions, setGapQuestions] = useState([]);
-  const [answers, setAnswers] = useState({}); // map: questionIndex -> row[]
+  const [answers, setAnswers] = useState({});
   const [gapStatus, setGapStatus] = useState("idle"); // idle | generating | ready | error
   const [gapError, setGapError] = useState("");
 
@@ -44,7 +45,7 @@ export default function ResumeBuilder() {
 
   // --- Section 3: Resume Generation (JSON preview) ---
   const [previewJSON, setPreviewJSON] = useState(null);
-  const [genStatus, setGenStatus] = useState("idle"); // idle | generating | ready | error
+  const [genStatus, setGenStatus] = useState("idle");
   const [genError, setGenError] = useState("");
   const [isEditingPreview, setIsEditingPreview] = useState(false);
   const [editedPreviewText, setEditedPreviewText] = useState("");
@@ -113,7 +114,6 @@ export default function ResumeBuilder() {
   }
 
   function handleClear() {
-    // Reset everything in-memory
     setJobPost("");
     setTouched(true);
     setGapQuestions([]);
@@ -125,12 +125,10 @@ export default function ResumeBuilder() {
     setGenError("");
   }
 
-  // --- Smooth scroll helper ---
   function scrollTo(ref) {
     ref?.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  // --- Row change handlers (array-of-rows shape) ---
   function handleRowChange(qIdx, rowIdx, field, value) {
     setAnswers((prev) => {
       const next = { ...prev };
@@ -164,7 +162,6 @@ export default function ResumeBuilder() {
     });
   }
 
-  // --- API-backed functions ---
   async function analyzeGaps(jobText) {
     const data = await fetchJSON("/analyze/gaps", {
       method: "POST",
@@ -177,19 +174,16 @@ export default function ResumeBuilder() {
   }
 
   async function generateResume(jobText, answersPayload, questionsPayload) {
-    // The server loads the saved baseline by user_id and then
-    // calls a GPT-5 Thinking pass to route/apply answers.
     return fetchJSON("/generate", {
       method: "POST",
       body: JSON.stringify({
         job_description: jobText,
-        answers: answersPayload,           // { [qIdx]: [{text, experience, enhance}] }
+        answers: answersPayload,
         questions: questionsPayload ?? [],
       }),
     });
   }
 
-  // --- Section 1 -> Section 2 ---
   async function handleContinue() {
     if (!isValid || gapStatus === "generating") return;
 
@@ -202,7 +196,6 @@ export default function ResumeBuilder() {
       const qs = await analyzeGaps(jobPost);
       setGapQuestions(qs);
 
-      // initialize one row per question if missing (state-only)
       setAnswers((prev) => {
         const next = { ...prev };
         qs.forEach((_, qi) => {
@@ -221,7 +214,6 @@ export default function ResumeBuilder() {
     }
   }
 
-  // At least one non-empty answer (>= 8 chars) per question
   const allAnswered =
     gapQuestions.length === 0 ||
     gapQuestions.every((_, qi) =>
@@ -230,7 +222,6 @@ export default function ResumeBuilder() {
 
   const showPreview = genStatus !== "idle" && allAnswered;
 
-  // --- Generate preview JSON ---
   async function handleGenerate() {
     if (!allAnswered || genStatus === "generating") return;
 
@@ -242,7 +233,7 @@ export default function ResumeBuilder() {
 
     try {
       const payload = await generateResume(jobPost, answers, gapQuestions);
-      setPreviewJSON(payload); // state only; no storage
+      setPreviewJSON(payload);
       setGenStatus("ready");
       requestAnimationFrame(() => scrollTo(section3Ref));
     } catch (e) {
@@ -263,16 +254,15 @@ export default function ResumeBuilder() {
   function handleSaveEditedPreview() {
     try {
       const parsed = JSON.parse(editedPreviewText);
-      setPreviewJSON(parsed); // state only
+      setPreviewJSON(parsed);
       setIsEditingPreview(false);
-    } catch (e) {
+    } catch {
       alert("Invalid JSON. Please fix formatting.");
     }
   }
 
-  // --- UI ---
   return (
-    <div className="resume-form">
+    <div className="rg-form">
       {/* SECTION 1: Job Post */}
       <section ref={section1Ref} className="section-card appear">
         <h1>Job Post</h1>
@@ -326,40 +316,34 @@ export default function ResumeBuilder() {
         aria-hidden={gapStatus === "idle"}
       >
         <h2>Gap Analysis</h2>
-        {gapStatus === "generating" && (
-          <p className="muted">Creating questions…</p>
-        )}
+        {gapStatus === "generating" && <p className="muted">Creating questions…</p>}
         {gapStatus === "error" && (
-          <p className="error">
-            {gapError || "Something went wrong. Try again."}
-          </p>
+          <p className="error">{gapError || "Something went wrong. Try again."}</p>
         )}
 
         {gapStatus === "ready" && (
           <>
-            {gapQuestions.length > 0 ? (
+            {gapQuestions.length === 0 ? (
+              <p className="muted">Looking great! No meaningful gaps found.</p>
+            ) : (
               <>
                 <p>Answer the questions below so we can tailor your resume.</p>
 
                 <ol className="qa-list">
                   {gapQuestions.map((q, i) => {
-                    const qTitle        = typeof q === "string" ? q : q?.question ?? "";
-                    const tags          = Array.isArray(q?.skill_tags) ? q.skill_tags : [];
-                    const priority      = typeof q === "object" ? q?.priority : null;
-                    const jdGap         = typeof q === "object" ? q?.jd_gap : "";
-                    const gapReason     = typeof q === "object" ? q?.gap_reason : "";
-                    const coverage      = typeof q === "object" ? q?.coverage_status : null;
-                    const answerHint    = typeof q === "object" ? q?.answer_hint : "";
-                    const bulletSkeleton= typeof q === "object" ? q?.bullet_skeleton : "";
-                    const exampleBullet = typeof q === "object" ? q?.example_bullet : "";
+                    const qTitle   = typeof q === "string" ? q : q?.question ?? "";
+                    const tags     = Array.isArray(q?.skill_tags) ? q.skill_tags : [];
+                    const priority = typeof q === "object" ? q?.priority : null;
+                    const jdGap    = typeof q === "object" ? q?.jd_gap : "";
+                    const gapReason= typeof q === "object" ? q?.gap_reason : "";
+                    const coverage = typeof q === "object" ? q?.coverage_status : null;
 
                     const anchor =
                       typeof q === "object" && typeof q?.target_anchor === "string"
                         ? q.target_anchor
                         : "";
                     const matchedOpt = experienceOptions.find(
-                      (opt) =>
-                        anchor && opt.toLowerCase().includes(anchor.toLowerCase())
+                      (opt) => anchor && opt.toLowerCase().includes(anchor.toLowerCase())
                     );
                     const defaultOpt = matchedOpt || experienceOptions[0] || "";
 
@@ -400,20 +384,6 @@ export default function ResumeBuilder() {
                           </div>
                         )}
 
-                        {(answerHint || bulletSkeleton || exampleBullet) && (
-                          <div className="answer-guidance">
-                            {answerHint && <div className="mini-hint">{answerHint}</div>}
-                            {bulletSkeleton && (
-                              <div className="mini-skeleton">
-                                Skeleton: <code>{bulletSkeleton}</code>
-                              </div>
-                            )}
-                            {exampleBullet && (
-                              <div className="mini-example">e.g., {exampleBullet}</div>
-                            )}
-                          </div>
-                        )}
-
                         {rows.map((row, rIdx) => (
                           <div key={rIdx} className="qa-row">
                             <span className="answer-label">Answer {rIdx + 1}</span>
@@ -425,10 +395,7 @@ export default function ResumeBuilder() {
                                 handleRowChange(i, rIdx, "text", e.target.value)
                               }
                               rows={4}
-                              placeholder={
-                                bulletSkeleton ||
-                                "Start with a verb; include tools, scope, metric, outcome."
-                              }
+                              placeholder="Start with a verb; include tools, scale, metric, outcome."
                             />
 
                             <div className="qa-controls">
@@ -478,19 +445,6 @@ export default function ResumeBuilder() {
                     type="button"
                     onClick={handleGenerate}
                     disabled={!allAnswered || genStatus === "generating"}
-                  >
-                    {genStatus === "generating" ? "Generating…" : "Generate resume"}
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="muted">Looking great! No meaningful gaps found.</p>
-                <div className="button-row">
-                  <button
-                    type="button"
-                    onClick={handleGenerate}
-                    disabled={genStatus === "generating"}
                   >
                     {genStatus === "generating" ? "Generating…" : "Generate resume"}
                   </button>

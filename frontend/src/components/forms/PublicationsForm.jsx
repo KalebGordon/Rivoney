@@ -10,6 +10,7 @@ import { initialPublication } from "../utils/defaultTemplates";
 export const PublicationsForm = ({ publications, setPublications }) => {
   const { handleChange, handleAdd } = useFormHandlers();
 
+  // Ensure at least one row exists
   useEffect(() => {
     if (!publications || publications.length === 0) {
       setPublications([initialPublication]);
@@ -17,11 +18,11 @@ export const PublicationsForm = ({ publications, setPublications }) => {
   }, [publications, setPublications]);
 
   return (
-    <>
+    <section className="section-card">
+      <h3>Articles & Publications</h3>
+
       {(publications || []).map((pub, i) => (
         <div key={i} style={{ marginBottom: "1.5rem" }}>
-          <h3>Article/Publication</h3>
-
           <input
             type="text"
             className="form-input"
@@ -63,15 +64,17 @@ export const PublicationsForm = ({ publications, setPublications }) => {
             onChange={handleChange(setPublications, i, "summary")}
           />
 
-          {publications.length - 1 === i && (
-            <AddRemoveButton
-              label="Publication"
-              onAdd={handleAdd(setPublications, initialPublication)}
-            />
-          )}
+          {/* Divider between rows (not after the last) */}
+          {i < (publications?.length ?? 0) - 1 && <hr />}
         </div>
       ))}
-    </>
+
+      {/* Single add button adds another publication row within the same section */}
+      <AddRemoveButton
+        label="Publication"
+        onAdd={handleAdd(setPublications, initialPublication)}
+      />
+    </section>
   );
 };
 

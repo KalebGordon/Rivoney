@@ -20,28 +20,30 @@ const SkillsForm = ({ skills, setSkills }) => {
 
   return (
     <>
-      <h3>Skill</h3>
+    <section className="section-card">
+      <h3>Skills</h3>
       {(skills || []).map((skill, i) => (
         <div key={i} style={{ marginBottom: "1.5rem" }}>
+          
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Skill (e.g., Web Development)"
+              value={skill || ""}
+              onChange={(e) => {
+                const newSkills = [...skills];
+                newSkills[i] = e.target.value;
+                setSkills(newSkills);
+              }}
+            />
 
-          <input
-            type="text"
-            className="form-input"
-            placeholder="Skill (e.g., Web Development)"
-            value={skill || ""}
-            onChange={(e) => {
-              const newSkills = [...skills];
-              newSkills[i] = e.target.value;
-              setSkills(newSkills);
-            }}
-          />
-
-          {/* Add only on last row to reduce clutter */}
-          {skills.length - 1 === i && (
-            <AddRemoveButton label="Skill" onAdd={handleAdd(setSkills, initialSkill)} />
-          )}
+            {/* Add only on last row to reduce clutter */}
+            {skills.length - 1 === i && (
+              <AddRemoveButton label="Skill" onAdd={handleAdd(setSkills, initialSkill)} />
+            )}
         </div>
       ))}
+      </section>
     </>
   );
 };

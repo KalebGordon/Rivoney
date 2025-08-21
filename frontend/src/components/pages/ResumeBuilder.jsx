@@ -1,16 +1,16 @@
 // File: components/forms/ResumeBuilder.jsx
 import React, { useState } from 'react';
-import BasicsForm from '../forms/BasicsForm';            // <- fix casing
+import BasicsForm from '../forms/BasicsForm';
 import ExperienceForm from '../forms/ExperienceForm';
 import EducationForm from '../forms/EducationForm';
 import CertificationsForm from '../forms/CertificationsForm';
 import ProjectsForm from '../forms/ProjectsForm';
 import PublicationsForm from '../forms/PublicationsForm';
-import AwardsForm from '../forms/AwardsForm';            // <- fix var name
+import AwardsForm from '../forms/AwardsForm';
 import SkillsForm from '../forms/SkillsForm';
 
 import {
-  initialBasics,          // <- make sure this exists (see below)
+  initialBasics,
   initialExperience,
   initialEducation,
   initialCertificate,
@@ -42,8 +42,6 @@ const mergeUnique = (...lists) => {
   return out;
 };
 
-// Map current form state into JSON Resume (tolerant / normalized)
-// Map current form state into JSON Resume (tolerant / normalized)
 function mapToJsonResume({
   basics = {},
   experience,
@@ -77,28 +75,20 @@ function mapToJsonResume({
         postalCode: safeBasics.location.postalCode || "",
         countryCode: safeBasics.location.countryCode || ""
       },
-      // forms give strings; normalize to JSON Resume objects
       profiles: safeBasics.profiles.map(p =>
         typeof p === "string"
           ? { network: "", url: "" }
-          : {
-              network: p.network || "",
-              url: p.url || ""
-            }
+          : { network: p.network || "", url: p.url || "" }
       )
     },
-
-    // EXPERIENCE -> work[]
     work: (experience || []).map(x => ({
       name: x.company || x.name || "",
       position: x.title || x.position || "",
       startDate: x.startDate || "",
       endDate: x.isCurrent ? "" : (x.endDate || ""),
-      location: x.setting || "",                 // <- map "Remote/Hybrid/On-site"
+      location: x.setting || "",
       highlights: Array.isArray(x.description) ? x.description : []
     })),
-
-    // EDUCATION -> education[]
     education: (education || []).map(ed => ({
       institution: ed.institution || "",
       studyType: ed.studyType || "",
@@ -108,31 +98,16 @@ function mapToJsonResume({
       endDate: ed.isCurrent ? "" : (ed.endDate || ""),
       description: Array.isArray(ed.description) ? ed.description : []
     })),
-
-    // CERTIFICATES -> certificates[]
     certificates: (certifications || []).map(c =>
       typeof c === "string"
         ? { name: c, date: "", issuer: "" }
-        : {
-            name: c.name || "",
-            date: c.date || "",
-            issuer: c.issuer || "",
-            url: c.url || ""
-          }
+        : { name: c.name || "", date: c.date || "", issuer: c.issuer || "", url: c.url || "" }
     ),
-
-    // PROJECTS -> projects[] (only fields you capture)
     projects: (projects || []).map(p =>
       typeof p === "string"
         ? { name: p }
-        : {
-            name: p.name || "",
-            url: p.url || "",
-            highlights: Array.isArray(p.highlights) ? p.highlights : []
-          }
+        : { name: p.name || "", url: p.url || "", highlights: Array.isArray(p.highlights) ? p.highlights : [] }
     ),
-
-    // PUBLICATIONS -> publications[]
     publications: (publications || []).map(pub => ({
       name: pub.name || "",
       publisher: pub.publisher || "",
@@ -140,27 +115,18 @@ function mapToJsonResume({
       url: pub.url || "",
       summary: pub.summary || ""
     })),
-
-    // AWARDS -> awards[]
     awards: (awards || []).map(a => ({
       title: a.title || "",
       awarder: a.awarder || "",
       date: a.date || "",
       summary: a.summary || ""
     })),
-
-    // SKILLS -> skills[] (no keywords in form; omit)
-    skills: (skills || [])
-      .map((s) => String(s).trim())
-      .filter(Boolean)
+    skills: (skills || []).map((s) => String(s).trim()).filter(Boolean)
   };
 }
 
 const ResumeBuilder = () => {
-  // ❗ basics should be an object, not an array
   const [basics, setBasics] = useState(initialBasics);
-
-  // The rest are lists (multiple entries), keep as arrays
   const [experience, setExperience] = useState([initialExperience]);
   const [education, setEducation] = useState([initialEducation]);
   const [certifications, setCertifications] = useState([initialCertificate]);
@@ -173,7 +139,7 @@ const ResumeBuilder = () => {
     e.preventDefault();
 
     const resume = mapToJsonResume({
-      basics,                     // <- now an object
+      basics,
       experience,
       education,
       certifications,
@@ -199,9 +165,8 @@ const ResumeBuilder = () => {
   };
 
   return (
-    <form className="resume-form" onSubmit={handleSubmit}>
-      <h2>Resume Builder</h2>
-
+    <form className="rb-form" onSubmit={handleSubmit}>
+    
       <BasicsForm basics={basics} setBasics={setBasics} />
       <ExperienceForm experience={experience} setExperience={setExperience} />
       <EducationForm education={education} setEducation={setEducation} />

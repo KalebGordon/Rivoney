@@ -1,57 +1,55 @@
-form.resume-form {
+.section-card + .section-card {
+  margin-top: 1rem;
+}
+
+form.rb-form {
   max-width: 600px;
   margin: 2rem auto;
-  padding: 2rem;
+  padding: 1rem 2rem;
   background: #f9f9f9;
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.1);
 }
 
-form.resume-form {
+form.rb-form {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
                Arial, "Noto Sans", "Liberation Sans", sans-serif;
-  font-size: 16px;        /* pick your base size */
+  font-size: 16px;
   line-height: 1.5;
 }
 
 /* Force ALL controls to inherit typography */
-form.resume-form input,
-form.resume-form textarea,
-form.resume-form select,
-form.resume-form button {
-  font: inherit;          /* inherits family, size, weight, line-height, etc. */
+form.rb-form input,
+form.rb-form textarea,
+form.rb-form select,
+form.rb-form button {
+  font: inherit;
   color: inherit;
   letter-spacing: inherit;
-}
-
-form.resume-form input,
-form.resume-form select,
-form.resume-form textarea,
-form.resume-form button {
   box-sizing: border-box;
 }
 
 /* Make placeholders consistent too */
-form.resume-form ::placeholder {
+form.rb-form ::placeholder {
   color: #888;
-  opacity: 1;             /* Safari/Firefox normalize */
+  opacity: 1;
   font: inherit;
 }
 
-resume-form h2 {
+.rb-form h2 {
   text-align: center;
   margin-bottom: 1.5rem;
 }
 
-form.resume-form label {
+form.rb-form label {
   display: block;
   margin: 0.5rem 0rem 0.25rem;
   font-weight: 600;
 }
 
-form.resume-form input,
-form.resume-form select,
-form.resume-form textarea{
+form.rb-form input,
+form.rb-form select,
+form.rb-form textarea {
   width: 100%;
   padding: 0.5rem;
   margin-bottom: 1rem;
@@ -60,7 +58,7 @@ form.resume-form textarea{
   font-size: 1rem;
 }
 
-form.resume-form button {
+form.rb-form button {
   width: 100%;
   padding: 0.5rem;
   background-color: #0077cc;
@@ -71,18 +69,18 @@ form.resume-form button {
   cursor: pointer;
 }
 
-form.resume-form button:hover {
+form.rb-form button:hover {
   background-color: #005fa3;
 }
 
-form.resume-form button.remove-btn {
+form.rb-form button.remove-btn {
   width: 2rem;
   height: 2rem;
   min-width: 2rem;
   min-height: 2rem;
   display: flex;
-  align-items: center;   /* vertical center */
-  justify-content: center; /* horizontal center */
+  align-items: center;
+  justify-content: center;
   font-size: 1rem;
   background-color: #a64a00;
   color: #fff;
@@ -90,15 +88,15 @@ form.resume-form button.remove-btn {
   border-radius: 4px;
   cursor: pointer;
   flex-shrink: 0;
-  line-height: 1; /* removes extra vertical whitespace */
-  padding: 0;     /* no extra padding */
+  line-height: 1;
+  padding: 0;
   transform: translateY(-0.5rem);
 }
 
-form.resume-form button.remove-btn:hover {
-   filter: brightness(0.9); 
+form.rb-form button.remove-btn:hover {
+  filter: brightness(0.9);
 }
 
-form.resume-form button.remove-btn span {
+form.rb-form button.remove-btn span {
   display: inline-block;
 }
