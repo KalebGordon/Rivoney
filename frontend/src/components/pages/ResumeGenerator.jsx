@@ -49,6 +49,7 @@ export default function ResumeGenerator() {
   const [genError, setGenError] = useState("");
   const [isEditingPreview, setIsEditingPreview] = useState(false);
   const [editedPreviewText, setEditedPreviewText] = useState("");
+  const MIN_ANSWER_LEN = 8;
 
   // Refs for smooth scrolling between sections
   const section1Ref = useRef(null);
@@ -217,13 +218,40 @@ export default function ResumeGenerator() {
   const allAnswered =
     gapQuestions.length === 0 ||
     gapQuestions.every((_, qi) =>
-      toRows(answers[qi]).some((r) => (r.text || "").trim().length >= 8)
+      toRows(answers[qi]).some((r) => (r.text || "").trim().length >= MIN_ANSWER_LEN)
     );
 
-  const showPreview = genStatus !== "idle" && allAnswered;
+    const answeredCount = useMemo(() => {
+      if (!gapQuestions?.length) return 0;
+      return gapQuestions.reduce((n, _, qi) => {
+        const ok = toRows(answers[qi]).some(
+          (r) => (r.text || "").trim().length >= MIN_ANSWER_LEN
+        );
+        return n + (ok ? 1 : 0);
+      }, 0);
+    }, [gapQuestions, answers]);
+
+  const hasAnyAnswer = answeredCount > 0;
+
+  const showPreview = genStatus !== "idle";
+
+  function buildFilteredAnswers() {
+    // Keep only rows with meaningful text, coerce keys to numbers for backend
+    const filtered = {};
+    Object.entries(answers || {}).forEach(([qi, rows]) => {
+      const cleaned = toRows(rows).filter(
+        (r) => (r.text || "").trim().length >= MIN_ANSWER_LEN
+      );
+      if (cleaned.length > 0) {
+        const qiNum = Number(qi);
+        filtered[Number.isNaN(qiNum) ? qi : qiNum] = cleaned;
+      }
+    });
+    return filtered;
+  }
 
   async function handleGenerate() {
-    if (!allAnswered || genStatus === "generating") return;
+    if (genStatus === "generating") return;
 
     setGenStatus("generating");
     setGenError("");
@@ -232,7 +260,8 @@ export default function ResumeGenerator() {
     setEditedPreviewText("");
 
     try {
-      const payload = await generateResume(jobPost, answers, gapQuestions);
+      const filteredAnswers = buildFilteredAnswers();
+      const payload = await generateResume(jobPost, filteredAnswers, gapQuestions);
       setPreviewJSON(payload);
       setGenStatus("ready");
       requestAnimationFrame(() => scrollTo(section3Ref));
@@ -302,9 +331,15 @@ export default function ResumeGenerator() {
           <button
             type="button"
             onClick={handleContinue}
-            disabled={!isValid || gapStatus === "generating"}
+            disabled={genStatus === "generating"}
           >
-            {gapStatus === "generating" ? "Analyzing…" : "Continue"}
+            {genStatus === "generating"
+                ? "Generating…"
+                : `Generate resume${
+                    gapQuestions.length
+                      ? ` (${answeredCount}/${gapQuestions.length} answered)`
+                      : ""
+                  }`}
           </button>
         </div>
       </section>

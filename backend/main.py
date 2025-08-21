@@ -1,4 +1,4 @@
-# # app.py — FastAPI + sqlite3 storage, JSON Resume aware
+# # main.py — FastAPI + sqlite3 storage, JSON Resume aware
 # from __future__ import annotations
 # from difflib import get_close_matches
 # from typing import Dict, List, Optional, Literal
@@ -656,7 +656,7 @@
 
 #     return GenerateResponse(resume=merged)
 
-# app.py — FastAPI + sqlite3 storage, JSON Resume aware
+# main.py — FastAPI + sqlite3 storage, JSON Resume aware
 from __future__ import annotations
 from difflib import get_close_matches
 from typing import Dict, List, Optional, Literal, Tuple
